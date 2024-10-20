@@ -1,0 +1,144 @@
+﻿@model DemoWeb.Models.Employee
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+       
+
+        $("form").on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeName: $('#EmployeeName').val(),
+                EmployeeEmail: $('#EmployeeEmail').val(),
+                EmployeeAddress: $('#EmployeeAddress').val(),
+                EmployeePosition: $('#EmployeePosition').val(),
+                DateJoined: $('#DateJoined').val(),
+                Password: $('#Password').val(),
+                isActive: $('#isActive').val(),
+
+            };
+
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Create", "Employee")',
+                data: data,
+                headers: {
+                    'RequestVerificationToken': token // Add the token in headers
+                }
+            })
+                .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
+                    console.log({ data });
+                })
+                .fail((err) => {
+                    $('.modal-body').text(data.errors.errorMessage);
+
+                    $('#exampleModal').modal('show');
+                    console.error(err);
+                })
+                .always(() => {
+                    console.log('always called');
+                });
+        });
+    });
+</script>
+
+
+
+<h1>Create Employee</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post" asp-controller="employee">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Common Fields -->
+            <div class="form-group">
+                <label asp-for="EmployeeName" class="control-label"></label>
+                <input asp-for="EmployeeName" class="form-control" />
+                <span asp-validation-for="EmployeeName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmployeeAddress" class="control-label"></label>
+                <input asp-for="EmployeeAddress" class="form-control" />
+                <span asp-validation-for="EmployeeAddress" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmployeeEmail" class="control-label"></label>
+                <input asp-for="EmployeeEmail" class="form-control" />
+                <span asp-validation-for="EmployeeEmail" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmployeePosition" class="control-label"></label>
+                <select asp-for="EmployeePosition" asp-items="Model.PositionList" class="form-control">
+                    <option value="">Select Position</option>
+                </select>
+                <span asp-validation-for="EmployeePosition" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateJoined" class="control-label"></label>
+                <input asp-for="DateJoined" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                <span asp-validation-for="DateJoined" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="isActive" class="control-label"></label>
+                <input type="radio" asp-for="isActive" value="True" checked /> True
+                <input type="radio" asp-for="isActive" value="False" /> False
+                <span asp-validation-for="isActive" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

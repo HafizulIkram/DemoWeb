@@ -1,0 +1,36 @@
+﻿@model IEnumerable<DemoWeb.DTO.EmployeeTaskResult>
+
+@{
+    ViewData["Title"] = "Employee Tasks";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Employee Name</th>
+            <th>Task Name</th>
+            <th>Date Assigned</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var task in Model)
+            {
+                <tr>
+                    <td>@task.EmployeeName</td>
+                    <td>@task.TaskName</td>
+                    <td>@task.DateAssigned.ToString("yyyy-MM-dd")</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="3" class="text-center">No tasks assigned</td>
+            </tr>
+        }
+    </tbody>
+</table>

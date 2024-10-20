@@ -1,0 +1,121 @@
+﻿@* @model DemoWeb.Models.EmployeeTask
+
+@{
+    ViewData["Title"] = "Edit Assign Task Details";
+}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        function getUrl(action, controller) {
+            const baseUrl = window.location.origin; // Get the base URL (e.g., http://localhost:7278)
+            return `${baseUrl}/${controller}/${action}`;
+        }
+
+
+        $("form").on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeId: $('#EmployeeName').val(),
+                TaskId: $('#TaskId').val(),
+                TaskObjectives: $('#TaskObjectives').val(),
+                TaskStatus: $('#@Model.Task.TaskStatus').val(),
+
+            };
+
+            console.log({ data });
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: getUrl('Edit', 'EmployeesTask'), // Use getUrl function for dynamic URL building
+                data: data,
+
+                headers: {
+                    'RequestVerificationToken': token // Add the token in headers
+                }
+            })
+                .done((data) => {
+                    console.log({ data });
+                })
+                .fail((err) => {
+                    console.error(err);
+                })
+                .always(() => {
+                    console.log('always called');
+                });
+        });
+    });
+</script>
+<h1>Edit Assign Task Details</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" asp-controller="employeesTask">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="EmploTaskId" />
+            <div class="form-group">
+                <label asp-for="@Model.Employee.EmployeeName" class="control-label"></label>
+                <input asp-for="@Model.Employee.EmployeeName" class="form-control" readonly />
+                <span asp-validation-for="@Model.Employee.EmployeeName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Employee.EmployeeEmail" class="control-label" ></label>
+                <input asp-for="@Model.Employee.EmployeeEmail" class="form-control" readonly />
+                <span asp-validation-for="@Model.Employee.EmployeeEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.TaskName" class="control-label"></label>
+                <input asp-for="@Model.Task.TaskName" class="form-control" />
+                <span asp-validation-for="@Model.Task.TaskName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Task.TaskStatus" class="control-label"></label>
+                <select asp-for="@Model.Task.TaskStatus" asp-items="Model.Task.StatusList" class="form-control">
+                    <option value="">Select Task Status</option>
+                </select>
+                <span asp-validation-for="@Model.Task.TaskStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaskObjectives" class="control-label"></label>
+                <input asp-for="TaskObjectives" class="form-control" />
+                <span asp-validation-for="TaskObjectives" class="text-danger"></span>
+            </div>
+         
+             <div class="form-group">
+                <label asp-for="@Model.Employee.EmployeeRole" class="control-label" hidden></label>
+                <input asp-for="@Model.Employee.EmployeeRole" class="form-control" hidden />
+                <span asp-validation-for="@Model.Employee.EmployeeRole" class="text-danger"></span>
+            </div>
+             <div class="form-group">
+                <label asp-for="@Model.Employee.EmployeeJoinedDate" class="control-label" hidden></label>
+                <input asp-for="@Model.Employee.EmployeeJoinedDate" class="form-control" hidden />
+                <span asp-validation-for="@Model.Employee.EmployeeJoinedDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Employee.EmployeeAddress" class="control-label" hidden></label>
+                <input asp-for="@Model.Employee.EmployeeAddress" class="form-control" hidden />
+                <span asp-validation-for="@Model.Employee.EmployeeAddress" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+ *@

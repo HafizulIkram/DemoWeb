@@ -1,0 +1,200 @@
+﻿/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #7d3fff, #ff85a2);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: transparent;
+}
+
+.navbar-brand {
+    color: white;
+}
+
+    .navbar-brand:hover {
+        color: black;
+    }
+
+/* Hero Section */
+.hero {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 50px;
+}
+
+.content {
+    max-width: 500px;
+}
+
+    .content h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .content p {
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+.btn {
+    padding: 15px 30px;
+    background-color: #fff;
+    color: #7d3fff;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+    .btn:hover {
+        background-color: #ff85a2;
+        color: #fff;
+    }
+
+.kanban-board img {
+    width: 100%; /* Make it responsive */
+    height: auto;
+}
+
+.carousel-item img {
+        height: 300px;
+        width: auto;
+    }
+
+
+
+.corouselContainer {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    justify-content: center; /* Ensures the content inside is centered */
+    align-items: center; /* Ensures the content inside is vertically centered */
+}
+
+.card{
+    background: transparent;
+    min-height: 200px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    color: #fff;
+    width: 100%;
+    z-index: 999;
+}
+
+.carousel{
+    width: 75%;
+    border: 3rm;
+}
+
+
+/* Responsive Media Queries */
+
+/* Small devices (tablets, 768px and below) */
+@media (max-width: 768px) {
+    .hero {
+        flex-direction: column; /* Stack elements vertically */
+        align-items: center;
+        padding: 20px;
+    }
+
+    .content h1 {
+        font-size: 36px; /* Smaller font size for smaller screens */
+    }
+
+    .content p {
+        font-size: 16px;
+    }
+
+    .kanban-board img {
+        width: 100%;
+        height: auto;
+    }
+
+    .carousel-item img {
+        width: fit-content; /* Adjust height for smaller screens */
+    }
+}
+
+/* Extra small devices (phones, 576px and below) */
+@media (max-width: 576px) {
+    .hero {
+        padding: 10px;
+    }
+
+    .content h1 {
+        font-size: 28px;
+    }
+
+    .content p {
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .kanban-board img {
+        width: 100%;
+        height: auto;
+    }
+
+    .carousel-item img {
+        height: 300px;
+        width: fit-content; /* Adjust height further for smaller screens */
+    }
+
+    /* Adjust footer padding */
+    footer {
+        padding: 15px;
+    }
+}
+
+/* Very small devices (phones, 375px and below) */
+@media (max-width: 375px) {
+    .content h1 {
+        font-size: 24px;
+    }
+
+    .content p {
+        font-size: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+
+    .kanban-board img {
+        width: 100%;
+    }
+
+    .carousel-item img {
+        min-height: 100px;
+        margin: auto;
+        width: fit-content;
+    }
+}

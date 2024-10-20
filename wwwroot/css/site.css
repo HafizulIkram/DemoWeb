@@ -1,0 +1,155 @@
+
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem black, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    background: white;
+    color: black;
+    min-height: 100vh;
+    margin: 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+
+
+.page-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.search-section {
+    margin-bottom: 20px;
+}
+
+.employee-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+    .employee-card:hover {
+        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .employee-card .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: black;
+    }
+
+    .employee-card .card-text {
+        font-size: 14px;
+        color: #666;
+    }
+
+.pagination-controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+    .pagination-controls .btn {
+        margin: 0 5px;
+        background-color: #fff;
+        color: #7d3fff;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+.modal-content{
+    color: black;
+}
+
+
+/*.container-fluid{
+    align-content: flex-start;
+    flex-wrap: inherit;
+}
+
+.navbar > .container-fluid{
+    align-content: flex-start;
+    flex-direction: column;
+  
+}
+
+.navbar-expand-sm .navbar-nav{
+    flex-direction: column;
+}*/
+
+
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 999;
+}
+
+/* Small devices (tablets, 768px and below) */
+@media (max-width: 768px) {
+
+
+   /* .navbar{
+        width: 25%;
+        height: 100vh;
+    }*/
+    .content h1 {
+        font-size: 36px; /* Smaller font size for smaller screens */
+    }
+
+    .content p {
+        font-size: 16px;
+    }
+}
+
+/* Extra small devices (phones, 576px and below) */
+@media (max-width: 576px) {
+    
+
+    .content h1 {
+        font-size: 28px;
+    }
+
+    .content p {
+        font-size: 14px;
+    }
+
+    
+
+    /* Adjust footer padding */
+    footer {
+        padding: 15px;
+    }
+}
+
+/* Very small devices (phones, 375px and below) */
+@media (max-width: 375px) {
+    .content h1 {
+        font-size: 24px;
+    }
+
+    .content p {
+        font-size: 12px;
+    }
+
+    
+
+    
+}

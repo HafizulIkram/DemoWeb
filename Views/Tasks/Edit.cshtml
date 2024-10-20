@@ -1,0 +1,115 @@
+﻿@* @model DemoWeb.Models.Tasks
+
+@{
+    ViewData["Title"] = "Edit Task Details";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+       $(document).ready(function () {
+    
+            $("form").on("submit", function (e) {
+                e.preventDefault(); // Prevent default form submission
+
+                // Get anti-forgery token
+                var token = $("input[name='__RequestVerificationToken']").val();
+
+                // Get EmployeeId from the hidden field
+                var id = $("input[name='TaskId']").val();
+
+                // Collect form data, including the RequestVerificationToken
+                const data = {
+                    __RequestVerificationToken: token,  // Correct anti-forgery token name
+                    TaskName: $('#TaskName').val(),
+                    TaskStatus: $('#TaskStatus').val(),
+                    TaskId: id,
+                   
+                };
+
+                console.log({ data });
+
+                // Send AJAX request
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("Edit", "Tasks")', // Use getUrl function for dynamic URL building
+                    data: data, // Pass form data
+                    headers: {
+                        'RequestVerificationToken': token // Add the anti-forgery token in the headers
+                    }
+                })
+                    .done((data) => {
+
+                        $('.modal-body').text(data.message);
+
+                        $('#exampleModal').modal('show');
+                        console.log('Success:', response);
+                        // Add any success handling logic here
+                    })
+                    .fail((err) => {
+                        $('.modal-body').text("Error " + err.status);
+
+                        $('#exampleModal').modal('show');
+                        console.error('Error:', err);
+                        // Add any error handling logic here
+                    })
+                    .always(() => {
+                        console.log('Request completed.');
+                    });
+            });
+
+    });
+
+</script>
+
+<h1>Edit Task Details</h1>
+
+<h4>Task</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" asp-controller="tasks">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="TaskId" />
+            <div class="form-group">
+                <label asp-for="TaskName" class="control-label"></label>
+                <input asp-for="TaskName" class="form-control" />
+                <span asp-validation-for="TaskName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaskStatus" class="control-label"></label>
+                <select asp-for="TaskStatus" asp-items="Model.StatusList" class="form-control">
+                    <option value="">Select Task Progress</option>
+                </select>
+                <span asp-validation-for="TaskId" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+ *@

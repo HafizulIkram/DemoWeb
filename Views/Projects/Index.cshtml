@@ -1,0 +1,55 @@
+﻿@model IEnumerable<DemoWeb.Models.Projects>
+
+@{
+    ViewData["Title"] = "Projects Details";
+}
+
+<h1>Project Details</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectEndDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectStatus)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectDescription)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectStartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectEndDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectStatus)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

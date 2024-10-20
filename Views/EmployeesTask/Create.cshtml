@@ -1,0 +1,129 @@
+﻿@model DemoWeb.Models.EmployeeTask
+
+@{
+
+    ViewData["Title"] = "Create Employee";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        function getUrl(action, controller) {
+            const baseUrl = window.location.origin; // Get the base URL (e.g., http://localhost:7278)
+            return `${baseUrl}/${controller}/${action}`;
+        }
+
+       
+        $("form").on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+   
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeId: $('#EmployeeId').val(),
+                TaskId: $('#TaskId').val(),
+                AssignDate $('#AssignDate').val(),
+
+            };
+
+            console.log({ data });
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: getUrl('Create', 'EmployeesTask'), // Use getUrl function for dynamic URL building
+                data: data,
+
+                headers: {
+                    'RequestVerificationToken': token // Add the token in headers
+                }
+            })
+                .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
+                    console.log({ data });
+                })
+                .fail((err) => {
+                    $('.modal-body').text(data.errors.errorMessage);
+
+                    $('#exampleModal').modal('show');
+                    console.error(err);
+                })
+                .always(() => {
+                    console.log('always called');
+                });
+        });
+    });
+</script>
+<h1>Create Employee</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post" asp-controller="employeesTask">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Common Fields -->
+
+            <div class="form-group">
+                <label asp-for="EmployeeId" class="control-label"></label>
+                <select asp-for="EmployeeId" asp-items="Model.Employees" class="form-control">
+                    <option value="">Select Employee</option>
+                </select>
+                <span asp-validation-for="EmployeeId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="TaskId" class="control-label"></label>
+                <select asp-for="TaskId" asp-items="Model.Tasks" class="form-control">
+                    <option value="">Select Task</option>
+                </select>
+                <span asp-validation-for="TaskId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="AssignDate" class="control-label"></label>
+                <input asp-for="AssignDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                <span asp-validation-for="AssignDate" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+

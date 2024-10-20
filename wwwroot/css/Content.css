@@ -1,0 +1,45 @@
+﻿body {
+    background-color: #b6ff00;
+}
+
+.page-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.employee-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+    .employee-card:hover {
+        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .employee-card .card-title {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .employee-card .card-text {
+        font-size: 14px;
+        color: #666;
+    }
+
+.form-inline .form-control {
+    width: auto;
+}
+
+.pagination-controls {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+    .pagination-controls .btn {
+        margin: 0 5px;
+    }
+

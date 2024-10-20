@@ -1,0 +1,182 @@
+﻿@* @model DemoWeb.Models.Employees
+
+@{
+    ViewData["Title"] = "Edit Employee Details";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+   $(document).ready(function () {
+
+        function getUrl(action, controller) {
+            const baseUrl = window.location.origin;
+            return `${baseUrl}/${controller}/${action}`;
+        }
+
+    // Hide role-specific sections by default
+    $("#ui-section").hide();
+    $("#backend-section").hide();
+    $("#fullstack-section").hide();
+
+
+
+    // Get the current value of EmployeeRole (which is readonly)
+    var role = $('#EmployeeRole').val();
+
+    // Show the relevant section based on the role value
+    if (role === "UI") {
+        $("#ui-section").show();
+    } else if (role === "Backend") {
+        $("#backend-section").show();
+    } else if (role === "Fullstack") {
+        $("#fullstack-section").show();
+    }
+
+
+        $("form").on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").va l();
+
+            // Get EmployeeId from the hidden field
+            var id = $("input[name='EmployeeId']").val();
+
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                __RequestVerificationToken: token,  // Correct anti-forgery token name
+                EmployeeName: $('#EmployeeName').val(),
+                EmployeeEmail: $('#EmployeeEmail').val(),
+                EmployeeAddress: $('#EmployeeAddress').val(),
+                EmployeeRole: $('#EmployeeRole').val(),
+                EmployeeJoinedDate: $('#EmployeeJoinedDate').val(),
+                UiFramework: $('#UiFramework').val(),
+                EmployeeId: id,  // Correct assignment
+                DesignTools: $('#DesignTools').val(),
+                BackendLanguage: $('#BackendLanguage').val(),
+                DatabaseTechnology: $('#DatabaseTechnology').val(),
+                FullstackLevel: $('#FullstackLevel').val(),
+            };
+
+            console.log({ data });
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: getUrl('Edit', 'Employees') + '/' + id, // Use getUrl function for dynamic URL building
+                data: data, // Pass form data
+                headers: {
+                    'RequestVerificationToken': token // Add the anti-forgery token in the headers
+                }
+            })
+                .done((response) => {
+                    console.log('Success:', response);
+                    // Add any success handling logic here
+                })
+                .fail((err) => {
+                    console.error('Error:', err);
+                    // Add any error handling logic here
+                })
+                .always(() => {
+                    console.log('Request completed.');
+                });
+        });
+
+});
+
+</script>
+
+<h1>Edit Employee Details</h1>
+
+<h4>Employee</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" asp-controller="employees">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="EmployeeId" />
+            <div class="form-group">
+                <label asp-for="EmployeeName" class="control-label"></label>
+                <input asp-for="EmployeeName" class="form-control" />
+                <span asp-validation-for="EmployeeName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmployeeEmail" class="control-label"></label>
+                <input asp-for="EmployeeEmail" class="form-control" />
+                <span asp-validation-for="EmployeeEmail" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmployeeAddress" class="control-label"></label>
+                <input asp-for="EmployeeAddress" class="form-control" />
+                <span asp-validation-for="EmployeeAddress" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EmployeeRole" class="control-label"></label>
+                <select asp-for="EmployeeRole" asp-items="Model.RoleList" class="form-control" disabled>
+                    <option value="">Select Role</option>
+                </select>
+                <span asp-validation-for="EmployeeRole" class="text-danger"></span>
+
+                <!-- Hidden field to store the role value for form submission -->
+                <input type="hidden" asp-for="EmployeeRole" />
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EmployeeJoinedDate" class="control-label"></label>
+                <input asp-for="EmployeeJoinedDate" class="form-control" readonly />
+                <span asp-validation-for="EmployeeJoinedDate" class="text-danger"></span>
+            </div>
+
+            <!-- UI-Specific Fields -->
+            <div id="ui-section">
+                <h4>UI Developer Details</h4>
+                <div class="form-group">
+                    <label asp-for="UiFramework" class="control-label"></label>
+                    <input asp-for="UiFramework" class="form-control" />
+                    <span asp-validation-for="UiFramework" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DesignTools" class="control-label"></label>
+                    <input asp-for="DesignTools" class="form-control" />
+                    <span asp-validation-for="DesignTools" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Backend-Specific Fields -->
+            <div id="backend-section">
+                <h4>Backend Developer Details</h4>
+                <div class="form-group">
+                    <label asp-for="BackendLanguage" class="control-label"></label>
+                    <input asp-for="BackendLanguage" class="form-control" />
+                    <span asp-validation-for="BackendLanguage" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="DatabaseTechnology" class="control-label"></label>
+                    <input asp-for="DatabaseTechnology" class="form-control" />
+                    <span asp-validation-for="DatabaseTechnology" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Fullstack-Specific Fields -->
+            <div id="fullstack-section">
+                <h4>Fullstack Developer Details</h4>
+                <div class="form-group">
+                    <label asp-for="FullstackLevel" class="control-label"></label>
+                    <input asp-for="FullstackLevel" class="form-control" />
+                    <span asp-validation-for="FullstackLevel" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+ *@

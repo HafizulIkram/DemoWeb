@@ -1,0 +1,100 @@
+﻿@{
+    ViewData["Title"] = "Task Management Homepage";
+    Layout = "_Homepage";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management Software</title>
+    <link rel="stylesheet" href="Homepage.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+
+    <section class="hero">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mb-5 d-flex flex-column justify-content-center align-items-center text-center ">
+                    <div class="TitleContainer">
+						<h1>Task Management Software</h1>
+						<p>Manage your tasks efficiently with our software. Organize, track, and complete tasks all in one place.</p>
+						<a class="btn" asp-area="" asp-controller="Employee" asp-action="Index">Get Started</a>
+                    </div>
+                    
+                </div>
+               @*  <div class="col-md-8  d-flex justify-content-center">
+					<div class="kanban-board">
+						<img src="/image/kanbanBoard.png" class="img-fluid" alt="Kanban Board">
+					</div>
+                </div> *@
+            </div>
+            <div class="row">
+                <div class="col-md-12  d-flex justify-content-center">
+                    <div class="corouselContainer">
+                        <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="image/CorouselFirst.jpg" class="d-block w-100" alt="...">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="image/CorouselSecond.jpg" class="d-block w-100" alt="...">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="image/CorouselThird.jpg" class="d-block w-100" alt="...">
+                                </div>
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="row">
+            <h2 class="text-center">Key Features of Our System</h2>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tasks fa-3x mb-3"></i>
+                        <h5 class="card-title">Task Management</h5>
+                        <p class="card-text">Organize and manage tasks efficiently. Track task progress, assign tasks, and prioritize effectively.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                        <h5 class="card-title">Progress Tracking</h5>
+                        <p class="card-text">Monitor the progress of each project and task in real-time. Stay updated with dynamic reports and dashboards.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h5 class="card-title">Team Collaboration</h5>
+                        <p class="card-text">Facilitate teamwork with features like shared task boards, group messaging, and collaborative tools.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
