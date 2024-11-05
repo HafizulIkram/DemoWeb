@@ -13,7 +13,7 @@ namespace DemoWeb.Entity
         public virtual string TaskDescription { get; set; }
 
         
-        public virtual string TaskStatus { get; set; }
+       
 
        
         public virtual string TaskPriority { get; set; }

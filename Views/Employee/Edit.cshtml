@@ -1,45 +1,119 @@
 ﻿@model DemoWeb.Models.Employee
 
-<h1>Edit Assign Task Details</h1>
+@{
+    ViewData["Title"] = "Edit Employee Details";
+}
 
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" asp-controller="employee">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="EmployeeId" />
-            <input type="hidden" asp-for="Password" />
-            <input type="hidden" asp-for="DateJoined" />
-            <div class="form-group">
-                <label asp-for="EmployeeName" class="control-label"></label>
-                <input asp-for="EmployeeName" class="form-control" />
-                <span asp-validation-for="EmployeeName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmployeeEmail" class="control-label"></label>
-                <input asp-for="EmployeeEmail" class="form-control" />
-                <span asp-validation-for="EmployeeEmail" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmployeeAddress" class="control-label"></label>
-                <input asp-for="EmployeeAddress" class="form-control" />
-                <span asp-validation-for="EmployeeAddress" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmployeePosition" class="control-label"></label>
-                <select asp-for="EmployeePosition" asp-items="Model.PositionList" class="form-control">
-                    <option value="">Select Position</option>
-                </select>
-                <span asp-validation-for="EmployeePosition" class="text-danger"></span>
-            </div>
 
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        // On clicking the login button
+        $('#btnCreate').click(function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeName: $('#EmployeeName').val(),
+                EmployeeEmail: $('#EmployeeEmail').val(),
+                EmployeeAddress: $('#EmployeeAddress').val(),
+                EmployeePosition: $('#EmployeePosition').val(),
+                DateJoined: $('#DateJoined').val(),
+                Password: $('#Password').val(),
+                isActive: $('#isActive').val(),
+
+            };
+
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Edit", "Employee")',
+                data: data,
+                headers: {
+                    'RequestVerificationToken': token // Add the token in headers
+                }
+            })
+                .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
+                    console.log({ data });
+                })
+                .fail((err) => {
+                    $('.modal-body').text(data.errors.errorMessage);
+
+                    $('#exampleModal').modal('show');
+                    console.error(err);
+                })
+                .always(() => {
+                    console.log('always called');
+                });
+        });
+    });
+</script>
+
+
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <input type="hidden" asp-for="EmployeeId" />
+                <input type="hidden" asp-for="Password" />
+                <input type="hidden" asp-for="DateJoined" />
+                <input type="hidden" asp-for="isActive" />
+              
+
+                <!-- Employee Address -->
+                <div class="form-group mb-3">
+                    <label asp-for="EmployeeAddress" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
+                        <input asp-for="EmployeeAddress" class="form-control" />
+                    </div>
+                    <span asp-validation-for="EmployeeAddress" class="text-danger"></span>
+                </div>
+
+                <!-- Employee Email -->
+                <div class="form-group mb-3">
+                    <label asp-for="EmployeeEmail" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-envelope"></i></span>
+                        <input asp-for="EmployeeEmail" class="form-control" />
+                    </div>
+                    <span asp-validation-for="EmployeeEmail" class="text-danger"></span>
+                </div>
+
+                <!-- Employee Position -->
+                <div class="form-group mb-3">
+                    <label asp-for="EmployeePosition" class="form-label"></label>
+                    <select asp-for="EmployeePosition" asp-items="Model.PositionList" class="form-select">
+                        <option value="">Select Position</option>
+                    </select>
+                    <span asp-validation-for="EmployeePosition" class="text-danger"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <input type="button" id="btnCreate" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

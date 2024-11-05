@@ -1,57 +1,198 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
+
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Tasks Management System</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management Layout</title>
+      <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DemoWeb.styles.css" asp-append-version="true" />
+
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: #ffffff;
+            padding-top: 1rem;
+            position: fixed;
+            width: 250px;
+            transition: width 0.3s;
+        }
+
+            .sidebar.collapsed {
+                width: 80px;
+            }
+
+            .sidebar .nav-link, .sidebar-footer .nav-link {
+                color: #ffffff;
+            }
+
+            .sidebar.collapsed .nav-link span,
+            .sidebar.collapsed .sidebar-footer span {
+                display: none;
+            }
+
+        /* Main content area with adjusted margin to avoid sidebar overlap */
+        .main-content {
+            margin-left: 250px;
+            padding: 1rem;
+            transition: margin-left 0.3s;
+            height: calc(100vh - 56px); /* Space for fixed footer */
+            overflow-y: auto;
+        }
+
+            .main-content.collapsed {
+                margin-left: 80px;
+            }
+
+        /* Fixed footer aligned to the right of the sidebar */
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 250px; /* Aligned with sidebar's right edge */
+            width: calc(100% - 250px); /* Takes remaining width */
+            height: 56px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: left 0.3s, width 0.3s;
+        }
+
+            footer.collapsed {
+                left: 80px;
+                width: calc(100% - 80px);
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-transparent border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="home" asp-action="Index">Tasks Management System</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 ms-auto">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">MyApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto">
+                    <!-- User Profile Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>My profile</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Account settings</a></li>
+                            <li><a class="dropdown-item text-danger" href="#">Log out</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Grid Layout -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div id="sidebar" class="sidebar">
+                <div class="d-flex align-items-center mb-3">
+                    <button id="toggle-btn" type="button" class="btn btn-light me-2">
+                        <i class="lni lni-dashboard-square-1"></i>
+                    </button>
+                    <a href="#" class="navbar-brand">TaskMent</a>
+                </div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Profile">
+                            <i class="lni lni-user-4"></i>
+                            <span>My Profile</span>
+                        </a>
+                    </li>
+                    <!-- Role-based navigation items for HR, Team Leader, and Employee roles -->
+                    @if (User.IsInRole("HR"))
+                    {
+                        <!-- HR Section -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#employeeSubmenu" aria-expanded="false">
+                                <i class="lni lni-user-multiple-4"></i>
+                                <span>Employee</span>
+                            </a>
+                            <ul id="employeeSubmenu" class="collapse list-unstyled ms-3">
+                                <li><a class="nav-link" asp-controller="Employee" asp-action="Index">Employee List</a></li>
+                                <li><a class="nav-link" asp-controller="Employee" asp-action="Create">Add New Employee</a></li>
+                            </ul>
                         </li>
-         
-                        </li>
+                    }
+                    @if (User.IsInRole("Team Leader"))
+                    {
+                        <!-- Team Leader Section -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Create">Add New Employee</a>
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#taskSubmenu" aria-expanded="false">
+                                <i class="lni lni-user-multiple-4"></i>
+                                <span>Task</span>
+                            </a>
+                            <ul id="taskSubmenu" class="collapse list-unstyled ms-3">
+                                <li><a class="nav-link" asp-controller="Tasks" asp-action="Index">List</a></li>
+                                <li><a class="nav-link" asp-controller="Tasks" asp-action="Create">Add New Task</a></li>
+                            </ul>
                         </li>
-                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Tasks" asp-action="Create">Add New Tasks</a>
-                        </li>
+                    }
+                    <!-- Employee Section -->
+                    @if (User.IsInRole("Employee"))
+                    {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="EmployeesTask" asp-action="Create">Assign New Task</a>
+                            <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#assignTaskSubmenu" aria-expanded="false">
+                                <i class="lni lni-user-multiple-4"></i>
+                                <span>Employee Task</span>
+                            </a>
+                            <ul id="assignTaskSubmenu" class="collapse list-unstyled ms-3">
+                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">Assign Task List</a></li>
+                            </ul>
                         </li>
-                    </ul>
+                    }
+                </ul>
+                <div class="sidebar-footer mt-auto">
+                    <a class="nav-link" asp-controller="Home" asp-action="Logout">
+                        <i class="lni lni-exit"></i>
+                        <span>Logout</span>
+                    </a>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+
+            <!-- Main Content -->
+            <div id="main-content" class="main-content">
+                @RenderBody()
+            </div>
+        </div>
     </div>
 
-    <footer class="border-top footer ">
-      
-            &copy; 2024 - Tasks Managemenet System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-       
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Task Management Software. All Rights Reserved.</p>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('toggle-btn').addEventListener('click', function () {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const footer = document.querySelector('footer');
+
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('collapsed');
+            footer.classList.toggle('collapsed');
+        });
+    </script>
 </body>
 </html>

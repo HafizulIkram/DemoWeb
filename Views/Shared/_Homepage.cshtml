@@ -5,29 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Task Management System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/Homepage.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DemoWeb.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-transparent">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="home" asp-action="Index">Home</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+        <!-- Navbar & Hero Start -->
+        <div class="container-fluid position-relative p-0">
+            <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
+                <a href="" class="navbar-brand p-0">
+                    <img src="~/image/homeLogo.png" alt="Logo" >
+                    <h1 class="text-primary">Task</h1>
+                    
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                    <span class="fa fa-bars"></span>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" asp-controller="Employee" asp-action="Index">Employee</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="home" asp-action="Index">Login</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <div class="navbar-nav ms-auto py-0">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                        
+                    </div>
+
+                <a class="btn btn-primary rounded-pill d-inline-flex flex-shrink-0 py-2 px-4" asp-controller="Home" asp-action="Login">Login</a>
                 </div>
-            </div>
-        </nav>
+            </nav>
+
+                <!-- Carousel Start -->
+                <div class="carousel-header">
+                    <div id="carouselId" class="carousel slide" data-bs-ride="carousel">
+                        <!-- Indicators -->
+                        <ol class="carousel-indicators">
+                            <li data-bs-target="#carouselId" data-bs-slide-to="0" class="active"></li>
+                            <li data-bs-target="#carouselId" data-bs-slide-to="1"></li>
+                        </ol>
+
+                        <!-- Carousel Inner -->
+                        <div class="carousel-inner" role="listbox">
+                            <!-- First Slide -->
+                            <div class="carousel-item active">
+                                <img src="~/image/CorouselFirst.jpg" class="img-fluid w-100" alt="First Slide">
+                                <div class="carousel-caption-1">
+                                    <div class="carousel-caption-1-content" style="max-width: 900px;">
+                                        <h4 class="text-white text-uppercase fw-bold mb-4 fadeInLeft animated">Efficient Task Management</h4>
+                                        <p class="mb-5 fs-5 text-white fadeInLeft animated">
+                                            Streamline your workflow with our advanced task management system.
+                                        </p>
+                                        <div class="carousel-caption-1-content-btn fadeInLeft animated">
+                                            <a class="btn btn-primary rounded-pill py-3 px-5 me-2" href="#">Start</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Second Slide -->
+                            <div class="carousel-item">
+                                <img src="~/image/CorouselSecond.jpg" class="img-fluid w-100" alt="Second Slide">
+                                <div class="carousel-caption-2">
+                                    <div class="carousel-caption-2-content" style="max-width: 900px;">
+                                        <h4 class="text-white text-uppercase fw-bold mb-4 fadeInLeft animated">Efficient Task Management</h4>
+                                        <p class="mb-5 fs-5 text-white fadeInLeft animated">
+                                            Streamline your workflow with our advanced task management system.
+                                        </p>
+                                        <div class="carousel-caption-2-content-btn fadeInRight animated">
+                                        <a class="btn btn-primary rounded-pill py-3 px-5 me-2" href="#">Start</a>
+                                   
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Carousel Controls -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Carousel End -->
+
+        </div>
+        <!-- Navbar & Hero End -->
     </header>
 
     <div class="container-fluid d-flex flex-column min-vh-100">

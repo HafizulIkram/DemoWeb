@@ -27,7 +27,12 @@ namespace DemoWeb.Models
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
         public virtual string Password { get; set; }
 
-		[Required]
+        [Required]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
+        [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
+        public virtual string ConfirmPassword { get; set; }
+
+        [Required]
         [DefaultValue(true)]
         public virtual bool isActive { get; set; }
 

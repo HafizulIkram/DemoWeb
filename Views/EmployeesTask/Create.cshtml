@@ -2,105 +2,154 @@
 
 @{
 
-    ViewData["Title"] = "Create Employee";
+    ViewData["Title"] = "Assign Task";
 }
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
+
+     function loadTaskPage(page) {
+        var searchQuery = $("#taskSearch").val();
+        
+        $.ajax({
+            url: '@Url.Action("GetTaskList", "EmployeesTask")',
+            data: { page: page, search: searchQuery }
+        })
+            .done(function (data) {
+                $("#taskListContainer").html(data); // Update the task list section
+            })
+            .fail(function (xhr) {
+                console.error("Failed to load tasks", xhr);
+            })
+            .always(function () {
+                console.log("Task list load attempt complete");
+            });
+
+    }
+
     $(document).ready(function () {
+        // Prevent Enter key in search field from submitting the form
+        $("#taskSearch").on("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault(); // Prevent form submission
+            }
+        });
 
-        function getUrl(action, controller) {
-            const baseUrl = window.location.origin; // Get the base URL (e.g., http://localhost:7278)
-            return `${baseUrl}/${controller}/${action}`;
-        }
+        // Search filter functionality
+        $("#taskSearch").on("input", function () {
+            var searchQuery = $(this).val().toLowerCase();
 
-       
-        $("form").on("submit", function (e) {
+            // Loop through each task item and toggle visibility based on search query
+            $("#taskList .task-item").each(function () {
+                var taskTitle = $(this).find(".form-check-label").text().toLowerCase();
+
+                if (taskTitle.includes(searchQuery)) {
+                    $(this).show();  // Show the task item if it matches
+                } else {
+                    $(this).hide();  // Hide the task item and accordion if it doesn't match
+                }
+            });
+        });
+
+        loadTaskPage(1); // Reload tasks on new search input
+
+        // On clicking the Create button
+        $('#btnCreate').click(function (e) {
             e.preventDefault(); // Prevent default form submission
-
-   
 
             // Get anti-forgery token
             var token = $("input[name='__RequestVerificationToken']").val();
+
+            var selectedTasks = [];
+            $("#taskListContainer input[name='TaskList']:checked").each(function () {
+                selectedTasks.push($(this).val());
+            });
 
             // Collect form data, including the RequestVerificationToken
             const data = {
                 _RequestVerificationToken: token,
                 EmployeeId: $('#EmployeeId').val(),
-                TaskId: $('#TaskId').val(),
-                AssignDate $('#AssignDate').val(),
-
+                TaskListId: selectedTasks, // Pass selected task IDs as an array
+                AssignDate: $('#AssignDate').val(),
             };
 
-            console.log({ data });
+            console.log(data);
 
             // Send AJAX request
             $.ajax({
                 type: 'POST',
-                url: getUrl('Create', 'EmployeesTask'), // Use getUrl function for dynamic URL building
+                url: '@Url.Action("Create", "EmployeesTask")',
                 data: data,
-
                 headers: {
                     'RequestVerificationToken': token // Add the token in headers
                 }
             })
                 .done((data) => {
-
                     $('.modal-body').text(data.message);
-
                     $('#exampleModal').modal('show');
                     console.log({ data });
                 })
                 .fail((err) => {
-                    $('.modal-body').text(data.errors.errorMessage);
-
+                    $('.modal-body').text(err.responseJSON.errors.errorMessage);
                     $('#exampleModal').modal('show');
                     console.error(err);
                 })
                 .always(() => {
-                    console.log('always called');
+                    console.log('Request completed');
                 });
         });
     });
 </script>
-<h1>Create Employee</h1>
-
-<hr />
-
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post" asp-controller="employeesTask">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <!-- Common Fields -->
-
-            <div class="form-group">
-                <label asp-for="EmployeeId" class="control-label"></label>
-                <select asp-for="EmployeeId" asp-items="Model.Employees" class="form-control">
-                    <option value="">Select Employee</option>
-                </select>
-                <span asp-validation-for="EmployeeId" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="TaskId" class="control-label"></label>
-                <select asp-for="TaskId" asp-items="Model.Tasks" class="form-control">
-                    <option value="">Select Task</option>
-                </select>
-                <span asp-validation-for="TaskId" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="AssignDate" class="control-label"></label>
-                <input asp-for="AssignDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
-                <span asp-validation-for="AssignDate" class="text-danger"></span>
-            </div>
 
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+
+
+<div class="container">
+    <div class="row justify-content-center flex align-items-center">
+        <div class="col-md-6 col-lg-5">
+            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Employee Name -->
+                <div class="form-group mb-3">
+                    <label asp-for="EmployeeId" class="form-label"></label>
+                    <select asp-for="EmployeeId" asp-items="Model.EmployeesList" class="form-select">
+                        <option value="">Select Employee</option>
+                    </select>
+                    <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                </div>
+
+                <!-- Task Search and Paginated List Container -->
+                <div class="form-group mb-3">
+                    <label asp-for="TaskId" class="form-label"></label>
+
+                    <!-- Task Search Input -->
+                    <input type="text" id="taskSearch" placeholder="Search tasks..." class="form-control mb-3" />
+
+                    <!-- Container for Task List Partial View -->
+                    <div id="taskListContainer">
+                        <!-- This will load the task list partial view dynamically -->
+                    </div>
+
+                    <span asp-validation-for="TaskId" class="text-danger"></span>
+                </div>
+
+                <!-- Date Joined -->
+                <div class="form-group mb-3">
+                    <label asp-for="AssignDate" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                        <input asp-for="AssignDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                    </div>
+                    <span asp-validation-for="AssignDate" class="text-danger"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <input type="submit" id="btnCreate" value="Create" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -117,13 +166,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-
             </div>
         </div>
     </div>
 </div>
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
-
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

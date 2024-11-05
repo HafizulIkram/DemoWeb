@@ -1,0 +1,44 @@
+﻿@model DemoWeb.Models.PagedTaskViewModel
+@{
+}
+
+<div id="taskList">
+    @foreach (var task in Model.Tasks)
+    {
+        <div class="task-item">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="TaskList" value="@task.TaskId" id="taskCheckbox-@task.TaskId">
+                <label class="form-check-label" for="taskCheckbox-@task.TaskId">
+                    @task.TaskTitle
+                </label>
+            </div>
+
+            <div class="accordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-@task.TaskId">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@task.TaskId" aria-expanded="false" aria-controls="collapse-@task.TaskId">
+                            @task.TaskTitle
+                        </button>
+                    </h2>
+                    <div id="collapse-@task.TaskId" class="accordion-collapse collapse" aria-labelledby="heading-@task.TaskId" data-bs-parent="#taskAccordion-@task.TaskId">
+                        <div class="accordion-body">
+                            @task.TaskDescription
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Pagination controls -->
+    <nav>
+        <ul class="pagination">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="#" onclick="loadTaskPage(@i); return false;">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>

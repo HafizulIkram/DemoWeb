@@ -15,7 +15,7 @@ namespace DemoWeb.Mapping
             Id(x => x.TaskId).GeneratedBy.Identity(); // Primary key with auto-increment
             Map(x => x.TaskTitle).Not.Nullable(); 
             Map(x => x.TaskDescription).Not.Nullable(); 
-            Map(x => x.TaskStatus).Not.Nullable();
+       
             Map(x => x.TaskPriority).Not.Nullable(); 
             Map(x => x.DueDate);
             Map(x => x.CreatedAt).Not.Nullable();

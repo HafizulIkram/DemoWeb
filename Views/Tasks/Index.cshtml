@@ -1,47 +1,92 @@
 ﻿@model IEnumerable<DemoWeb.Models.Tasks>
 
 @{
-    ViewData["Title"] = "Employees Details";
+    ViewData["Title"] = "Tasks List";
 }
 
-<h1>Tasks Details</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
- 
-  
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.TaskTitle)
-            </th>
-            <th>
-             @Html.DisplayNameFor(model => model.TaskStatus)
-            </th>
 
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TaskTitle)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.TaskStatus)
-                </td>
-              
+ <div class="container">
+     <div class="row">
+         <div class="col-md-1 col-md-10">
+             <div class="panel">
+                
+                <div class="panel-body table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TaskTitle)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TaskDescription)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.TaskPriority)
+                                </th>
 
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.TaskId">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.TaskId">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.TaskId">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                               
+                                <th>
+                                    @Html.DisplayNameFor(model => model.CreatedAt)
+								</th>
+								<th>
+									@Html.DisplayNameFor(model => model.DueDate)
+								</th>
+                                <th>
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.TaskTitle)
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.TaskDescription)
+                                    </td>
+									<td>
+                                        @if (item.TaskPriority == "Urgent")
+                                        {
+                                            <span class="badge bg-warning text-dark">
+                                            @Html.DisplayFor(modelItem => item.TaskPriority)
+                                            </span>
+                                        }
+                                        @if (item.TaskPriority == "Normal")
+                                        {
+                                            <span class="badge bg-primary">
+                                                @Html.DisplayFor(modelItem => item.TaskPriority)
+                                            </span>
+                                        }
+
+									</td>
+									<td>
+										@Html.DisplayFor(modelItem => item.CreatedAt)
+									</td>
+                                    <td>
+                                        @Html.DisplayFor(modelItem => item.DueDate)
+                                    </td>
+									
+                                    <td>
+                                        <ul class="action-list">
+                                            <li>
+												<a asp-action="Edit" asp-route-id="@item.TaskId">
+                                                    <i class="lni lni-pen-to-square"></i>
+												</a>
+                                            </li>
+										
+                                        </ul>
+
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+             </div>
+             
+         </div>
+     </div>
+ </div>

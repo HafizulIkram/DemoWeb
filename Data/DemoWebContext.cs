@@ -16,11 +16,9 @@ namespace DemoWeb.Data
         {
         }
 
-        public DbSet<DemoWeb.Models.Movies> Movies { get; set; } = default!;
+      
 
-        public DbSet<DemoWeb.Models.Employees> Employees { get; set; } = default!;
-
-        public DbSet<DemoWeb.Models.Projects> Projects { get; set; } = default!;
+     
 
         public DbSet<DemoWeb.Models.EmployeeTask> EmployeeTasks { get; set; } = default!;
 

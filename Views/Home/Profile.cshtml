@@ -1,0 +1,28 @@
+﻿@model DemoWeb.Models.Employee
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<br />
+
+<div class="container h-100 d-flex justify-content-center align-items-center">
+    <div class="container w-50">
+        <div class="card mx-auto">
+            <div class="card-header">
+                <h5>@Model.EmployeeName's Profile</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Email:</strong> @Model.EmployeeEmail</p>
+                <p><strong>Position:</strong> @Model.EmployeePosition</p>
+                <p><strong>Status:</strong> @(Model.isActive ? "Active" : "Inactive")</p>
+                <p><strong>Date Joined:</strong> @Model.DateJoined.ToString("d")</p>
+                <a asp-controller="Home" asp-action="EditPassword" class="btn btn-primary d-flex justify-content-center align-items-center">Edit Password</a>
+            </div>
+        </div>
+
+       
+    </div>
+   
+</div>
+
