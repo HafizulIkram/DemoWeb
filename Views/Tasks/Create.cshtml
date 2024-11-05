@@ -9,7 +9,9 @@
 <script>
     $(document).ready(function () {
 
-        $("form").on("submit", function (e) {
+        // On clicking the login button
+        $('#btnCreate').click(function (e) {
+
             e.preventDefault(); // Prevent default form submission
 
 
@@ -38,75 +40,101 @@
                 }
             })
                 .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
                     console.log({ data });
                 })
                 .fail((err) => {
-                    console.log(data);
-                    console.log(err);
+                    $('.modal-body').text(data.errors.errorMessage);
+
+                    $('#exampleModal').modal('show');
+                    console.error(err);
                 })
                 .always(() => {
-
                     console.log('always called');
                 });
         });
     });
 </script>
 
-<h1>Create Tasks</h1>
 
-<hr />
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post" asp-controller="Tasks">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <!-- Common Fields -->
-			<div class="form-group">
-				<label asp-for="TaskTitle" class="control-label"></label>
-				<input asp-for="TaskTitle" class="form-control" />
-				<span asp-validation-for="TaskTitle" class="text-danger"></span>
-			</div>
 
-            <div class="form-group">
-				<label asp-for="TaskDescription" class="control-label"></label>
-				<input asp-for="TaskDescription" class="form-control" />
-				<span asp-validation-for="TaskDescription" class="text-danger"></span>
-			</div>
 
-            <div class="form-group">
-				<label asp-for="TaskStatus" class="control-label"></label>
-				<input asp-for="TaskStatus" class="form-control" />
-				<span asp-validation-for="TaskStatus" class="text-danger"></span>
-			</div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-            <div class="form-group">
-				<label asp-for="TaskPriority" class="control-label"></label>
-				<input asp-for="TaskPriority" class="form-control" />
-				<span asp-validation-for="TaskPriority" class="text-danger"></span>
-			</div>
+                    <!-- Employee Name -->
+                    <div class="form-group mb-3">
+                        <label asp-for="TaskTitle" class="control-label"></label>
+                        <input asp-for="TaskTitle" class="form-control" />
+                        <span asp-validation-for="TaskTitle" class="text-danger"></span>
+                    </div>
 
-            <div class="form-group">
-				<label asp-for="DueDate" class="control-label"></label>
-				<input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
-				<span asp-validation-for="DueDate" class="text-danger"></span>
-			</div>
+                    <!-- Employee Address -->
+                    <div class="form-group mb-3">
+                        <label asp-for="TaskDescription" class="control-label"></label>
+                        <input asp-for="TaskDescription" class="form-control" />
+                        <span asp-validation-for="TaskDescription" class="text-danger"></span>
+                    </div>
 
-            <div class="form-group">
-				<label asp-for="CreatedAt" class="control-label"></label>
-				<input asp-for="CreatedAt" class="form-control" asp-format="{0:dd/MM/yyyy}" />
-				<span asp-validation-for="CreatedAt" class="text-danger"></span>
-			</div>
+                    <!-- Employee Email -->
+                    <div class="form-group mb-3">
+                        <label asp-for="TaskPriority" class="control-label"></label>
+                        <select asp-for="TaskPriority" asp-items="Model.PriorityList" class="form-control">
+                            <option value="">Select Task Priority</option>
+                        </select>
+                        <span asp-validation-for="TaskPriority" class="text-danger"></span>
+                    </div>
 
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                    <!-- Employee Position -->
+                    <div class="form-group mb-3">
+                        <label asp-for="CreatedAt" class="control-label"></label>
+                        <input asp-for="CreatedAt" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                        <span asp-validation-for="CreatedAt" class="text-danger"></span>
+                    </div>
+
+                    <!-- Date Joined -->
+                    <div class="form-group mb-3">
+                        <label asp-for="DueDate" class="control-label"></label>
+                        <input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                    </div>
+
+                   
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                        <input type="button" id="btnCreate" value="Create" class="btn btn-primary" />
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
-</div>
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

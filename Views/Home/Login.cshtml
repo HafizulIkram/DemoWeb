@@ -1,0 +1,134 @@
+﻿@model DemoWeb.Models.Employee
+@{
+	ViewData["Title"] = "Task Management Homepage";
+	Layout = null; // Set layout to null (no layout)
+}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+	$(document).ready(function () {
+
+		// On clicking the login button
+		$('#loginBtn').click(function (e) {
+			e.preventDefault(); // Prevent default form submission
+
+			// Get anti-forgery token
+			var token = $("input[name='__RequestVerificationToken']").val();
+
+			// Gather form data
+			var loginData = {
+				_RequestVerificationToken: token,
+				EmployeeEmail: $('#EmployeeEmail').val(),
+				Password: $('#Password').val(),
+			};
+
+			// Perform AJAX POST request
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("Login", "Home")',
+				data: loginData,
+				headers: {
+					'RequestVerificationToken': token // Add the token in headers
+
+				}
+			})
+				.done((data) => {
+					if (data.success) {
+						window.location.href = data.redirectUrl; // Redirect to a new page on success
+					} else {
+						$('.modal-body').text(data.message)
+
+						$('#exampleModal').modal('show');
+						console.error(data);
+					}
+				})
+				.fail((err) => {
+					$('.modal-body').text(data.errors.errorMessage);
+
+					$('#exampleModal').modal('show');
+					console.error(err);
+				})
+				.always(() => {
+					console.log(data);
+				});
+		});
+	});
+</script>
+
+
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Task Management Software</title>
+
+	<!-- Correct way to call CSS file -->
+	<link rel="stylesheet" href="~/css/Test.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<!-- External FontAwesome CDN -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+</head>
+
+
+
+
+<div class="wrapper">
+	<div class="logo">
+		<img src="~/image/homeLogo.png" alt="Logo">
+	</div>
+	<div class="text-center mt-4 name">
+		Task Management System
+	</div>
+
+	<!-- Use ASP.NET Core form helpers -->
+	<form asp-action="Login" asp-controller="Home" method="post" class="p-3 mt-3">
+		<!-- Username Field -->
+		<div class="form-field d-flex align-items-center">
+			<label asp-for="EmployeeEmail" class="sr-only"></label>
+			<input asp-for="EmployeeEmail" class="form-control"  placeholder="Email">
+			<span asp-validation-for="EmployeeEmail" class="text-danger"></span>
+		</div>
+
+		<!-- Password Field -->
+		<div class="form-field d-flex align-items-center mt-3">
+			<label asp-for="Password" class="sr-only"></label>
+			<input asp-for="Password" type="password" class="form-control" placeholder="Password">
+			<span asp-validation-for="Password" class="text-danger"></span>
+		</div>
+
+		<!-- Submit Button -->
+		<button type="button" class="btn mt-3" id="loginBtn">Login</button>
+
+	</form>
+
+	<!-- Forget Password -->
+	<div class="text-center fs-6 mt-3">
+		<a asp-controller="Home" asp-action="ForgetPassword">Forget Password</a>
+	</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+	<partial name="_ValidationScriptsPartial" />
+}
+

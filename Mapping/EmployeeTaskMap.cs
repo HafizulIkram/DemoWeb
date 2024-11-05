@@ -13,8 +13,9 @@ namespace DemoWeb.Mapping
             DynamicUpdate();
 
             Id(x => x.EmployeeTaskId).GeneratedBy.Identity(); // Primary key with auto-increment
-            References(x => x.Employee).Column("EmployeeId").PropertyRef(e => e.EmployeeId).ReadOnly().LazyLoad();  // Yes, that's all.
-            References(x => x.Task).Column("TaskId").PropertyRef(t => t.TaskId).ReadOnly().LazyLoad();  // Yes, that's all.
+            References(x => x.Employee).Column("EmployeeId").LazyLoad();  // Yes, that's all.
+            References(x => x.Task).Column("TaskId").LazyLoad();  // Yes, that's all.
+            Map(x => x.TaskStatus);
             Map(x => x.AssignDate); // 'HireDate' column
         }
     }

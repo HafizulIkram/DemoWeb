@@ -1,0 +1,54 @@
+﻿@model DemoWeb.Models.EmployeeTask
+
+@{
+    ViewData["Title"] = "Task Details";
+}
+<br />
+
+<h1>Tasks Details</h1>
+
+<br />
+
+<div class="container">
+
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.tasks.TaskTitle)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.tasks.TaskTitle)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.employee.EmployeeName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.employee.EmployeeName)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => Model.TaskStatus)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.TaskStatus)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.tasks.TaskPriority)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.tasks.TaskPriority)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.tasks.TaskDescription)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.tasks.TaskDescription)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AssignDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AssignDate)
+        </dd>
+
+    </dl>
+</div>

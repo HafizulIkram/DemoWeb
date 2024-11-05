@@ -1,4 +1,4 @@
-﻿@* @model DemoWeb.Models.Tasks
+﻿@model DemoWeb.Models.Tasks
 
 @{
     ViewData["Title"] = "Edit Task Details";
@@ -6,87 +6,118 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-       $(document).ready(function () {
-    
-            $("form").on("submit", function (e) {
-                e.preventDefault(); // Prevent default form submission
+    $(document).ready(function () {
 
-                // Get anti-forgery token
-                var token = $("input[name='__RequestVerificationToken']").val();
+        // On clicking the login button
+        $('#btnEdit').click(function (e) {
+           
+            e.preventDefault(); // Prevent default form submission
 
-                // Get EmployeeId from the hidden field
-                var id = $("input[name='TaskId']").val();
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
 
-                // Collect form data, including the RequestVerificationToken
-                const data = {
-                    __RequestVerificationToken: token,  // Correct anti-forgery token name
-                    TaskName: $('#TaskName').val(),
-                    TaskStatus: $('#TaskStatus').val(),
-                    TaskId: id,
-                   
-                };
+            // Get EmployeeId from the hidden field
+            var id = $("input[name='TaskId']").val();
 
-                console.log({ data });
+            // Collect form data, including the RequestVerificationToken
+            const data = {
+                __RequestVerificationToken: token,  // Correct anti-forgery token name
+                TaskTitle: $('#TaskTitle').val(),
+                TaskDescription: $('#TaskDescription').val(),
+                TaskPriority: $('#TaskPriority').val(),
+                TaskStatus: $('#TaskStatus').val(),
+                CreatedAt: $('#CreatedAt').val(),
+                DueDate: $('#DueDate').val(),
+                TaskId: id,
 
-                // Send AJAX request
-                $.ajax({
-                    type: 'POST',
-                    url: '@Url.Action("Edit", "Tasks")', // Use getUrl function for dynamic URL building
-                    data: data, // Pass form data
-                    headers: {
-                        'RequestVerificationToken': token // Add the anti-forgery token in the headers
-                    }
+            };
+
+            console.log(data);
+
+            // Send AJAX request
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Edit", "Tasks")', // Use getUrl function for dynamic URL building
+                data: data, // Pass form data
+                headers: {
+                    'RequestVerificationToken': token, // Add the anti-forgery token in the headers
+                    TaskId: id
+                }
+            })
+                .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
+                    console.log('Success:', data);
+                    // Add any success handling logic here
                 })
-                    .done((data) => {
+                .fail((err) => {
+                    $('.modal-body').text("Error " + err.status);
 
-                        $('.modal-body').text(data.message);
-
-                        $('#exampleModal').modal('show');
-                        console.log('Success:', response);
-                        // Add any success handling logic here
-                    })
-                    .fail((err) => {
-                        $('.modal-body').text("Error " + err.status);
-
-                        $('#exampleModal').modal('show');
-                        console.error('Error:', err);
-                        // Add any error handling logic here
-                    })
-                    .always(() => {
-                        console.log('Request completed.');
-                    });
-            });
-
+                    $('#exampleModal').modal('show');
+                    console.error('Error:', err);
+                    // Add any error handling logic here
+                })
+                .always(() => {
+                    console.log('Request completed.');
+                });
+        });
     });
-
 </script>
 
-<h1>Edit Task Details</h1>
 
-<h4>Task</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit" asp-controller="tasks">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="TaskId" />
-            <div class="form-group">
-                <label asp-for="TaskName" class="control-label"></label>
-                <input asp-for="TaskName" class="form-control" />
-                <span asp-validation-for="TaskName" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="TaskStatus" class="control-label"></label>
-                <select asp-for="TaskStatus" asp-items="Model.StatusList" class="form-control">
-                    <option value="">Select Task Progress</option>
-                </select>
-                <span asp-validation-for="TaskId" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                <input type="hidden" asp-for="TaskId" />
+
+                <!-- Employee Name -->
+                <div class="form-group mb-3">
+                  
+                    <label asp-for="TaskTitle" class="control-label"></label>
+                    <input asp-for="TaskTitle" class="form-control" />
+                    <span asp-validation-for="TaskTitle" class="text-danger"></span>
+                </div>
+
+                <!-- Task Search and Paginated List Container -->
+                <div class="form-group mb-3">
+                    <label asp-for="TaskDescription" class="control-label"></label>
+                    <input asp-for="TaskDescription" class="form-control" />
+                    <span asp-validation-for="TaskDescription" class="text-danger"></span>
+                </div>
+
+                <!-- Date Joined -->
+                <div class="form-group mb-3">
+                    <label asp-for="TaskPriority" class="control-label"></label>
+                    <select asp-for="TaskPriority" asp-items="Model.PriorityList" class="form-control">
+                        <option value="">Select Task Priority</option>
+                    </select>
+                    <span asp-validation-for="TaskPriority" class="text-danger"></span>
+                </div>
+
+                <!-- Task Search and Paginated List Container -->
+                <div class="form-group mb-3">
+                    <label asp-for="CreatedAt" class="control-label"></label>
+                    <input asp-for="CreatedAt" class="form-control" readonly />
+                    <span asp-validation-for="CreatedAt" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="DueDate" class="control-label"></label>
+                    <input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                    <span asp-validation-for="DueDate" class="text-danger"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="d-grid">
+                    <input type="submit" id="btnEdit" value="Edit" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -108,8 +139,6 @@
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
- *@
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

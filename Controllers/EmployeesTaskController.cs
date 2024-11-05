@@ -1,19 +1,18 @@
 ﻿using DemoWeb.Data;
-using DemoWeb.DTO;
 using DemoWeb.Entity;
-using DemoWeb.Migrations;
 using DemoWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using NHibernate.Transform;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace DemoWeb.Controllers
 {
+
+    [Authorize] // Restrict access to authenticated users
     public class EmployeesTaskController : Controller
     {
-
         private readonly NHibernateHelper _nhibernateHelper;
 
         public EmployeesTaskController(NHibernateHelper nHibernateHelper)
@@ -25,222 +24,413 @@ namespace DemoWeb.Controllers
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
-                EmployeeTaskEntity employeeTaskAlias = null;  // Alias for EmployeeTaskEntity
-                EmployeeEntity employeeAlias = null;         // Alias for EmployeeEntity
-                TaskEntity taskAlias = null;                 // Alias for TaskEntity
-                EmployeeTaskResult resultAlias = null;       // Alias for the result DTO
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
 
-                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
-                var query = await session.QueryOver(() => employeeTaskAlias)
-                    .JoinQueryOver(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
-                    .JoinQueryOver(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
-                    .SelectList(list => list
-                        .Select(() => employeeAlias.EmployeeName).WithAlias(() => resultAlias.EmployeeName)  // Select EmployeeName
-                        .Select(() => taskAlias.TaskTitle).WithAlias(() => resultAlias.TaskName)              // Select TaskTitle
-                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => resultAlias.DateAssigned)  // Select AssignDate
-                    )
-                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskResult>())  // Map results to DTO
-                    .ListAsync<EmployeeTaskResult>();  // Asynchronously fetch the list
+                // Get the currently logged-in user's EmployeeId from claims
+                var employeeIdClaim = User.FindFirst("EmployeeId");
+                if (employeeIdClaim == null)
+                {
+                    return Unauthorized();
+                }
 
-                return View(query);
+                int employeeId = int.Parse(employeeIdClaim.Value);
+
+                // Query to fetch EmployeeTask entities and join with Employee and Task
+                var employeeTaskEntities = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias)
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)
+                    .Where(() => employeeAlias.EmployeeId == employeeId)
+                    .ListAsync<EmployeeTaskEntity>();
+
+                // Convert entities to models
+                var employeeTasks = employeeTaskEntities.Select(entity => new EmployeeTask
+                {
+                    EmployeeTaskId = entity.EmployeeTaskId,
+                    EmployeeId = entity.Employee.EmployeeId,
+                    TaskId = entity.Task.TaskId,
+                    TaskStatus = entity.TaskStatus,
+                    AssignDate = entity.AssignDate,
+
+                    tasks = new EmployeeTask.Tasks
+                    {
+                        TaskTitle = entity.Task.TaskTitle,
+                        TaskPriority = entity.Task.TaskPriority,
+
+                    },
+
+                    employee = new EmployeeTask.Employee
+                    {
+                        EmployeeName = entity.Employee.EmployeeName,
+                    }
+                });
+
+                return View(employeeTasks);
             }
         }
 
+        // GET: Create
+        [Authorize(Roles = "Team Leader")] // Only allow TeamLeader role for Create GET
         public async Task<IActionResult> Create()
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
                 // Retrieve Employees and Tasks to populate the dropdowns
-                var employees = await session.QueryOver<EmployeeEntity>().ListAsync();
+                var employeesEntity = await session.QueryOver<EmployeeEntity>().ListAsync();
+                var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
 
-                var tasks = await session.QueryOver<TaskEntity>().ListAsync();
-
-               
-                var employeeSelectList = employees.Select(e => new SelectListItem
+                var employeeSelectList = employeesEntity.Select(e => new SelectListItem
                 {
                     Value = e.EmployeeId.ToString(),
                     Text = e.EmployeeName
                 }).ToList();
 
-                var taskSelectList = tasks.Select(t => new SelectListItem
+                // Convert tasksEntity to List<EmployeeTask.Tasks>
+                var tasksList = tasksEntity.Select(t => new EmployeeTask.Tasks
                 {
-                    Value = t.TaskId.ToString(),
-                    Text = t.TaskTitle
+                    TaskId = t.TaskId,
+                   TaskTitle = t.TaskTitle,
+                    TaskDescription = t.TaskDescription
                 }).ToList();
 
-            
-                var EmployeeTaskModel = new EmployeeTask
+                /* var taskSelectList = tasks.Select(t => new SelectListItem
+                 {
+                     Value = t.TaskId.ToString(),
+                     Text = t.TaskTitle + " " +
+                     t.TaskDescription
+                 }).ToList();*/
+
+                var employeeTaskModel = new EmployeeTask
                 {
-                    Employees = employeeSelectList,
-                    Tasks = taskSelectList
+                    EmployeesList = employeeSelectList,
+                    TaskList = tasksList
                 };
 
-                return View(EmployeeTaskModel); 
+                return View(employeeTaskModel);
             }
         }
 
-
-
+        // POST: Create
         [HttpPost]
-        public async Task<IActionResult> Create(EmployeeTask EmployeeTaskModel)
+        [Authorize(Roles = "Team Leader")] // Only allow TeamLeader role for Create POST
+        public async Task<IActionResult> Create(EmployeeTask employeeTaskModel)
         {
-            ModelState.Remove("Tasks");
-            ModelState.Remove("Employees");
-
+            ModelState.Remove("TaskId");
+            ModelState.Remove("TaskList");
+            ModelState.Remove("EmployeesList");
+            ModelState.Remove("employee");
+            ModelState.Remove("tasks");
+            ModelState.Remove("TaskStatus");
             if (!ModelState.IsValid)
             {
-                return View(EmployeeTaskModel);  // If the form is not valid, return the view with the model
+                return Json(new { success = false, message = "An error occurred"});
             }
 
             using (var session = _nhibernateHelper.OpenSession())
             {
                 using (var transaction = session.BeginTransaction())
                 {
-                    // Create a new EmployeeTaskEntity
-                    var EmployeeTaskEntity = new EmployeeTaskEntity
-                    {
-                        Employee = session.Get<EmployeeEntity>(EmployeeTaskModel.EmployeeId),  // Fetch the Employee by ID
-                        Task = session.Get<TaskEntity>(EmployeeTaskModel.TaskId),              // Fetch the Task by ID
-                        AssignDate = EmployeeTaskModel.AssignDate                          // Set the assignment date
-                    };
 
-                    // Save the EmployeeTaskEntity to the database
-                    await session.SaveAsync(EmployeeTaskEntity);
+                    var employee = session.Get<EmployeeEntity>(employeeTaskModel.EmployeeId);
+
+                    // Create a new EmployeeTaskEntity
+                    foreach (var taskId in employeeTaskModel.TaskListId)
+                    {
+                        var task = session.Get<TaskEntity>(taskId);
+                        if (task != null)
+                        {
+                            var employeeTaskEntity = new EmployeeTaskEntity
+                            {
+                                Employee = employee,
+                                Task = task,
+                                AssignDate = employeeTaskModel.AssignDate,
+                                TaskStatus = "Incomplete"
+                            };
+
+                            await session.SaveAsync(employeeTaskEntity); // Save each employee-task assignment
+                        }
+                    }
                     await transaction.CommitAsync();
 
-                    return RedirectToAction("Index");  // Redirect to the Index action
+                    return Json(new { success = true, message = "Task successfully Assign" });
                 }
             }
         }
 
+        [HttpGet]
+        [Authorize(Roles = "Team Leader")]
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 2)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
+                var totalTasks = tasksEntity.Count;
+                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
 
-       /* [HttpPost]
-         [ValidateAntiForgeryToken]
-         public async Task<IActionResult> Create(EmployeeTask EmployeeTask)
-         {
-             if (ModelState.IsValid)
-             {
-                 _context.Add(EmployeeTask);
-                 await _context.SaveChangesAsync();
-                 return Json(new { success = true, message = "Employee created successfully!" });
-             }
+                var tasksList = tasksEntity
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(t => new EmployeeTask.Tasks
+                    {
+                        TaskId = t.TaskId,
+                        TaskTitle = t.TaskTitle,
+                        TaskDescription = t.TaskDescription
+                    })
+                    .ToList();
 
-             return View();
-         }
+                var model = new PagedTaskViewModel
+                {
+                    Tasks = tasksList,
+                    CurrentPage = page,
+                    TotalPages = totalPages
+                };
 
-         public async Task<IActionResult> Edit(int? id)
-         {
-             if (id == null)
-             {
-                 return NotFound();
-             }
-
-             var employeeTask = await _context.EmployeeTasks
-             .Where(e => e.EmploTaskId == id).Include(e => e.Employee).
-                                                             Include(t => t.Task)
-
-     .FirstOrDefaultAsync();
-
-
-
-             if (employeeTask == null)
-             {
-                 return NotFound();
-             }
-
-             // Populate the Task.StatusList for the dropdown
-             employeeTask.Task.StatusList = new List<SelectListItem>
-     {
-         new SelectListItem { Text = "In-Progress", Value = "In-Progress" },
-         new SelectListItem { Text = "Complete", Value = "Complete" }
-     };
-
-             return View(employeeTask);
-         }
+                return PartialView("_TaskListPartialView", model);
+            }
+        }
 
 
+        [Authorize(Roles = "Team Leader")]
+        public async Task<IActionResult> Delete(int? EmployeeTaskId)
+        {
+            if (EmployeeTaskId == null)
+            {
+                return NotFound();
+            }
+
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+
+                // Define aliases for your entities
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
+
+                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
+                var employeeTaskEntities = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
+                    .Where(() => employeeTaskAlias.EmployeeTaskId == EmployeeTaskId)      // Filter by EmployeeTaskId
+                     .SelectList(list => list
+                        .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
+                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)          // Select AssignDate
+
+                    )
+                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
+                    .SingleOrDefaultAsync();
+
+                if (employeeTaskEntities == null)
+                {
+                    return NotFound(); // Return 404 if the task is not found
+                }
+
+                // Convert entities to models
+                EmployeeTask employeeTasks = new EmployeeTask
+                {
+                    EmployeeTaskId = employeeTaskEntities.EmployeeTaskId,
+                    EmployeeId = employeeTaskEntities.Employee.EmployeeId,
+                    TaskId = employeeTaskEntities.Task.TaskId,
+                    TaskStatus = employeeTaskEntities.TaskStatus,
+                    AssignDate = employeeTaskEntities.AssignDate,
+
+                    tasks = new EmployeeTask.Tasks
+                    {
+
+                        TaskTitle = employeeTaskEntities.Task.TaskTitle,
+                        TaskPriority = employeeTaskEntities.Task.TaskPriority,
+
+                    },
+
+                    employee = new EmployeeTask.Employee
+                    {
+                        EmployeeName = employeeTaskEntities.Employee.EmployeeName,
+                    }
+                };
 
 
-         [HttpPost]
-         [ValidateAntiForgeryToken]
-         public async Task<IActionResult> Edit(int id, EmployeeTask employeeTask)
-         {
-             if (id != employeeTask.EmploTaskId)
-             {
-                 return NotFound();
-             }
+                return View(employeeTasks);
+            }
+        }
 
-             ModelState.Remove("Task.StatusList");
-             ModelState.Remove("Employee.RoleList");
-             if (ModelState.IsValid)
-             {
+        [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Team Leader")]
+        public async Task<IActionResult> DeleteConfirmed(int? EmployeeTaskId)
+        {
+            try
+            {
+                using (var session = _nhibernateHelper.OpenSession())
+                {
+                    var employeeTaskEntity = await session.QueryOver<EmployeeTaskEntity>().Where(e => e.EmployeeTaskId == EmployeeTaskId).SingleOrDefaultAsync();
 
-                 try
-                 {
+                    if (employeeTaskEntity != null)
+                    {
+                        using (var transaction = session.BeginTransaction())
+                        {
+                            session.Delete(employeeTaskEntity);
+                            await transaction.CommitAsync();
+                            
 
-                     _context.Update(employeeTask);
-                     await _context.SaveChangesAsync();
-                 }
-                 catch (DbUpdateConcurrencyException)
-                 {
-                     if (!EmployeesTaksExists(employeeTask.EmploTaskId))
-                     {
-                         return NotFound();
-                     }
-                     else
-                     {
-                         throw;
-                     }
-                 }
-                 return RedirectToAction(nameof(Index));
-             }
+                            return Json(new { success = true, redirectUrl = Url.Action("Index", "EmployeesTask") });
+                        }
+                    }
 
+                    return Json(new { success = false, message = "Error deleting the assigned task" });
+                }
+            }
+            catch (Exception ex)
+            {
 
+                return Json(new { success = false, message = "An error occurred.", error = ex.Message });
+            }
+        }
 
-             return View();
-         }
+        [HttpGet]
+        public async Task<IActionResult> AcceptTask(int employeeTaskId)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                // Define aliases for your entities
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
 
-         public async Task<IActionResult> Delete(int? id)
-         {
+                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
+                var employeeTask = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
+                    .Where(() => employeeTaskAlias.EmployeeTaskId == employeeTaskId)      // Filter by EmployeeTaskId
+                     .SelectList(list => list
+                        .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
+                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)          // Select AssignDate
 
+                    )
+                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
+                    .SingleOrDefaultAsync();
 
-             if (id == null)
-             {
-                 return NotFound();
-             }
+                if (employeeTask == null)
+                {
+                    return NotFound(); // Return 404 if the task is not found
+                }
 
-             var employeeTask = await _context.EmployeeTasks.Include(e => e.Employee).
-                                                             Include(t => t.Task)
-                 .FirstOrDefaultAsync(e => e.EmploTaskId == id);
-             if (employeeTask == null)
-             {
+                employeeTask.TaskStatus = "Pending";
 
-                 return NotFound();
-             }
+                // Save changes to the database
+                using (var transaction = session.BeginTransaction())
+                {
+                    await session.UpdateAsync(employeeTask);
+                    await transaction.CommitAsync();
+                }
 
-             return View(employeeTask);
-         }
+                // Redirect back to the task list or another view
+                return RedirectToAction("Index");
+            }
+        }
 
+        public async Task<IActionResult> FinishTask(int employeeTaskId)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                // Define aliases for your entities
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
 
-         [HttpPost]
-         [ValidateAntiForgeryToken]
-         public async Task<IActionResult> Delete(int id)
-         {
-             var employeeTasks = await _context.EmployeeTasks.FindAsync(id);
-             if (employeeTasks != null)
-             {
-                 _context.EmployeeTasks.Remove(employeeTasks);
-             }
+                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
+                var employeeTask = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
+                    .Where(() => employeeTaskAlias.EmployeeTaskId == employeeTaskId)      // Filter by EmployeeTaskId
+                     .SelectList(list => list
+                        .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
+                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)          // Select AssignDate
 
-             await _context.SaveChangesAsync();
-             return RedirectToAction(nameof(Index));
-         }
+                    )
+                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
+                    .SingleOrDefaultAsync();
 
-         private bool EmployeesTaksExists(int id)
-         {
-             return _context.EmployeeTasks.Any(e => e.EmploTaskId == id);
-         }
- */
+                if (employeeTask == null)
+                {
+                    return NotFound(); // Return 404 if the task is not found
+                }
 
+                employeeTask.TaskStatus = "Finish";
+
+                // Save changes to the database
+                using (var transaction = session.BeginTransaction())
+                {
+                    await session.UpdateAsync(employeeTask);
+                    await transaction.CommitAsync();
+                }
+
+                // Redirect back to the task list or another view
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> TaskDetails(int employeeTaskId)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                // Define aliases for your entities
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
+
+                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
+                var employeeTaskEntities = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
+                    .Where(() => employeeTaskAlias.EmployeeTaskId == employeeTaskId)      // Filter by EmployeeTaskId
+                     .SelectList(list => list
+                        .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
+                        .Select(() => employeeTaskAlias.TaskStatus).WithAlias(() => employeeTaskAlias.TaskStatus)  // Select EmployeeTaskId
+                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)          // Select AssignDate
+                        .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)          // Select AssignDate
+
+                    )
+                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
+                    .SingleOrDefaultAsync();
+
+                if (employeeTaskEntities == null)
+                {
+                    return NotFound(); // Return 404 if the task is not found
+                }
+
+                // Convert entities to models
+                EmployeeTask employeeTasks = new EmployeeTask
+                {
+                    EmployeeTaskId = employeeTaskEntities.EmployeeTaskId,
+                    EmployeeId = employeeTaskEntities.Employee.EmployeeId,
+                    TaskId = employeeTaskEntities.Task.TaskId,
+                    TaskStatus = employeeTaskEntities.TaskStatus,
+                    AssignDate = employeeTaskEntities.AssignDate,
+
+                    tasks = new EmployeeTask.Tasks
+                    {
+
+                        TaskTitle = employeeTaskEntities.Task.TaskTitle,
+                        TaskPriority = employeeTaskEntities.Task.TaskPriority,
+                        TaskDescription = employeeTaskEntities.Task.TaskDescription,
+
+                    },
+
+                    employee = new EmployeeTask.Employee
+                    {
+                        EmployeeName = employeeTaskEntities.Employee.EmployeeName,
+                    }
+                };
+
+                return View(employeeTasks);
+            }
+        }
     }
 }

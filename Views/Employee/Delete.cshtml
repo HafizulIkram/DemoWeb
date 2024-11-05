@@ -1,7 +1,57 @@
 ﻿@model DemoWeb.Models.Employee
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@{
+    ViewData["Title"] = "Delete Employeed";
+}
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        // On clicking the login button
+        $('#DeleteBtn').click(function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            // Gather form data
+            var data = {
+                _RequestVerificationToken: token,
+                EmployeeId: $('#EmployeeId').val(),
+            };
+
+            console.log(data);
+            // Perform AJAX POST request
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Delete", "Employee")',
+                data: data,
+                headers: {
+                    'RequestVerificationToken': token // Add the token in headers
+                }
+            })
+                .done((data) => {
+
+                    $('.modal-body').text(data.message);
+
+                    $('#exampleModal').modal('show');
+                    console.log({ data });
+                })
+                .fail((err) => {
+                    $('.modal-body').text(data.errors.errorMessage);
+
+                    $('#exampleModal').modal('show');
+                    console.error(err);
+                })
+                .always(() => {
+                    console.log('always called');
+                });
+        });
+    });
+</script>
+
+
 <h3>Are you sure you want to delete this?</h3>
 <div>
     <h4>Movies</h4>
@@ -42,7 +92,8 @@
 
     <form asp-action="Delete" asp-controller="employee">
         <input type="hidden" asp-for="EmployeeId" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <input type="button" value="Delete" id="DeleteBtn" class="btn btn-danger" /> |
         <a asp-action="Index">Back to List</a>
     </form>
 </div>
+

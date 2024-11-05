@@ -1,9 +1,12 @@
 using DemoWeb.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using NHibernate; 
+using NHibernate;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddRazorPages()
+    .AddRazorRuntimeCompilation();
 // Register NHibernateHelper as a singleton service
 builder.Services.AddSingleton<NHibernateHelper>();
 
@@ -13,8 +16,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Employee/Login";
-        options.AccessDeniedPath = "/Employee/AccessDenied";
+        options.LoginPath = "/Home/Login";
+        options.AccessDeniedPath = "/Home/Index";
     });
 
 
@@ -35,10 +38,11 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication(); // This must come before UseAuthorization
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}");
 
 app.Run();

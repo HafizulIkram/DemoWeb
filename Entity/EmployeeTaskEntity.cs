@@ -8,10 +8,13 @@ namespace DemoWeb.Entity
 
         public virtual int EmployeeTaskId { get; set; }
 
+
         public virtual EmployeeEntity Employee { get; set; }
 
         public virtual TaskEntity Task { get; set; }
 
         public virtual DateTime AssignDate { get; set; }
+
+        public virtual string TaskStatus { get; set; }
     }
 }
