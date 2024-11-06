@@ -7,51 +7,62 @@
 
 
 <div class="container">
-    @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus))  // Group by Task Title
+    @if (Model != null && Model.Any())
     {
-        <h2>@taskGroup.Key Task</h2>
-
-        <div class="row">
-            @foreach (var task in taskGroup)
-            {
-                <div class="col-md-4 mb-4">
-                    <div class="card task-card">
-                        <div class="card-body">
-                            <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
-                            <p>
-                                <strong>Assigned to:</strong> @task.employee.EmployeeName <br /> <!-- Access Employee Name -->
-                                <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
-                                <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
-                                <strong>Due Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
-                            </p>
-
-                            <div class="btn-group">
-                                <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-info">Details</a>
-
-                                @if (User.IsInRole("Team Leader"))
-                                {
-                                    <a asp-action="Delete" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Delete</a>
-                                }
+        @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus))  // Group by Task Title
+        {
+            <h2>@taskGroup.Key Task</h2>
 
 
+            <div class="row">
+                @foreach (var task in taskGroup)
+                {
+                    <div class="col-md-4 mb-4">
+                        <div class="card task-card">
+                            <div class="card-body">
+                                <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
+                                <p>
+                                    <strong>Assigned to:</strong> @task.employee.EmployeeName <br /> <!-- Access Employee Name -->
+                                    <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
+                                    <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
+                                    <strong>Due Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
+                                </p>
 
-                                <!-- Only show the Accept Task button if the task status is 'Incomplete' -->
-                                @if (task.TaskStatus == "Incomplete")
-                                {
-                                    <a asp-action="AcceptTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Accept Task</a>
-                                }
+                                <div class="btn-group">
+                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-info">Details</a>
 
-                                @if (task.TaskStatus == "Pending")
-                                {
-                                    <a asp-action="FinishTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Finish</a>
-                                }
+                                    @if (User.IsInRole("Team Leader"))
+                                    {
+                                        <a asp-action="Delete" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Delete</a>
+                                    }
+
+
+
+                                    <!-- Only show the Accept Task button if the task status is 'Incomplete' -->
+                                    @if (task.TaskStatus == "Incomplete")
+                                    {
+                                        <a asp-action="AcceptTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Accept Task</a>
+                                    }
+
+                                    @if (task.TaskStatus == "Pending")
+                                    {
+                                        <a asp-action="FinishTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Finish</a>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            }
-        </div>
+                }
+            </div>
+        }
     }
+
+    else
+    {
+        <h1>No Task Available</h1>
+    }
+
+    
 </div>
 
 

@@ -11,38 +11,46 @@ namespace DemoWeb.Models
 		public virtual int EmployeeId { get; set; }
 
 		[Required]
-		public virtual string EmployeeName { get; set; }
+		public string EmployeeName { get; set; }
 
         [Required]
-        public virtual string EmployeeAddress { get; set; }
+        public string EmployeeAddress { get; set; }
 
         [Required]
-		public virtual string EmployeePosition { get; set; }
+		public  string EmployeePosition { get; set; }
 
 		[Required]
-		public virtual string EmployeeEmail { get; set; }
+		public  string EmployeeEmail { get; set; }
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
-        public virtual string Password { get; set; }
+        public  string Password { get; set; }
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
-        public virtual string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; }
 
         [Required]
         [DefaultValue(true)]
-        public virtual bool isActive { get; set; }
+        public  bool isActive { get; set; }
 
 		[Required]
 		[DataType(DataType.Date)]
-		public virtual DateTime DateJoined { get; set; }
+		public  DateTime DateJoined { get; set; }
 
         [AllowNull]
-        public virtual List<SelectListItem> PositionList { get; set; }
+        public  List<SelectListItem> PositionList { get; set; }
 
+        [AllowNull]
+        public int finishTaskCount { get; set; }
+
+        [AllowNull]
+        public int pendingTaskCount { get; set; }
+
+        [AllowNull]
+        public int incompleteTaskCount { get; set; }
     }
 
 }

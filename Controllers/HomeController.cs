@@ -43,6 +43,7 @@ namespace FirstWebApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(Login loginModel)
         {
             try
@@ -101,6 +102,7 @@ namespace FirstWebApp.Controllers
 		}
 
 		[HttpPost]
+		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ForgetPassword(Employee employee)
 		{
 			using (var session = _nhibernateHelper.OpenSession())
@@ -153,12 +155,15 @@ namespace FirstWebApp.Controllers
 		}
 
 		[HttpPost]
+        [ValidateAntiForgeryToken]
 		public async Task<IActionResult> UpdatePassword(string EmployeeEmail, string Password)
 		{
 			using (var session = _nhibernateHelper.OpenSession())
 			{
 				try
 				{
+
+
 					if (string.IsNullOrEmpty(Password))
 					{
 						return Json(new { success = false, message = "New password cannot be empty." });
@@ -199,6 +204,8 @@ namespace FirstWebApp.Controllers
         {
             try
             {
+
+               
                 // Get the employee ID from the claims
                 var employeeIdClaim = User.FindFirst("EmployeeId")?.Value;
 
@@ -206,10 +213,33 @@ namespace FirstWebApp.Controllers
                 {
                     using (var session = _nhibernateHelper.OpenSession())
                     {
+                        EmployeeTaskEntity employeeTaskAlias = null;
+                        EmployeeEntity employeeAlias = null;
+                        TaskEntity taskAlias = null;
+
                         // Fetch the employee details based on the employee ID
                         var employeeEntity = await session.QueryOver<EmployeeEntity>()
                             .Where(x => x.EmployeeId == employeeId)
                             .SingleOrDefaultAsync();
+                        // Count the number of finished tasks for a specific employee
+                        var finishTask = await session.QueryOver(() => employeeTaskAlias)
+                                       .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                       .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                       .And(() => employeeTaskAlias.TaskStatus == "Finish") // Filter by TaskStatus "Finished"
+                                       .RowCountAsync();
+
+                        var pendingTask = await session.QueryOver(() => employeeTaskAlias)
+                                      .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                      .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                      .And(() => employeeTaskAlias.TaskStatus == "Pending") // Filter by TaskStatus "Finished"
+                                      .RowCountAsync();
+
+                        var incompleteTask = await session.QueryOver(() => employeeTaskAlias)
+                                      .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                      .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                      .And(() => employeeTaskAlias.TaskStatus == "Incomplete") // Filter by TaskStatus "Finished"
+                                      .RowCountAsync();
+
 
                         if (employeeEntity != null)
                         {
@@ -222,7 +252,10 @@ namespace FirstWebApp.Controllers
                                 EmployeePosition = employeeEntity.EmployeePosition,
                                 isActive = employeeEntity.isActive,
                                 Password = employeeEntity.Password,
-                                DateJoined = employeeEntity.DateJoined
+                                DateJoined = employeeEntity.DateJoined,
+                                finishTaskCount = finishTask,
+                                pendingTaskCount = pendingTask,
+                                incompleteTaskCount = incompleteTask,
                             };
                             return View(employee);
                         }
@@ -247,6 +280,7 @@ namespace FirstWebApp.Controllers
         // Method to handle the Edit Password form submission
         [HttpPost]
         [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditPassword(Employee employee)
         {
             // Ensure that both passwords are provided and match
@@ -295,10 +329,7 @@ namespace FirstWebApp.Controllers
 
 
 
-
     }
 
 
-
-	
 }

@@ -47,7 +47,79 @@ namespace DemoWeb.Controllers
                 return View(employee);
             }
         }
-       #region MyRegionName
+
+        [Authorize(Roles = "HR")] // Ensure only authenticated users can access this action
+        public async Task<IActionResult> Details(int? id)
+        {
+            try
+            {
+
+                if (id != null)
+                {
+                    using (var session = _nhibernateHelper.OpenSession())
+                    {
+                        EmployeeTaskEntity employeeTaskAlias = null;
+                        EmployeeEntity employeeAlias = null;
+                        TaskEntity taskAlias = null;
+
+                        // Fetch the employee details based on the employee ID
+                        var employeeEntity = await session.QueryOver<EmployeeEntity>()
+                            .Where(x => x.EmployeeId == id)
+                            .SingleOrDefaultAsync();
+                        // Count the number of finished tasks for a specific employee
+                        var finishTask = await session.QueryOver(() => employeeTaskAlias)
+                                       .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                       .Where(() => employeeAlias.EmployeeId == id) // Filter by employeeId
+                                       .And(() => employeeTaskAlias.TaskStatus == "Finish") // Filter by TaskStatus "Finished"
+                                       .RowCountAsync();
+
+                        var pendingTask = await session.QueryOver(() => employeeTaskAlias)
+                                      .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                      .Where(() => employeeAlias.EmployeeId == id) // Filter by employeeId
+                                      .And(() => employeeTaskAlias.TaskStatus == "Pending") // Filter by TaskStatus "Finished"
+                                      .RowCountAsync();
+
+                        var incompleteTask = await session.QueryOver(() => employeeTaskAlias)
+                                      .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                      .Where(() => employeeAlias.EmployeeId == id) // Filter by employeeId
+                                      .And(() => employeeTaskAlias.TaskStatus == "Incomplete") // Filter by TaskStatus "Finished"
+                                      .RowCountAsync();
+
+
+                        if (employeeEntity != null)
+                        {
+                            Employee employee = new Employee
+                            {
+                                EmployeeId = employeeEntity.EmployeeId,
+                                EmployeeName = employeeEntity.EmployeeName,
+                                EmployeeAddress = employeeEntity.EmployeeAddress,
+                                EmployeeEmail = employeeEntity.EmployeeEmail,
+                                EmployeePosition = employeeEntity.EmployeePosition,
+                                isActive = employeeEntity.isActive,
+                                Password = employeeEntity.Password,
+                                DateJoined = employeeEntity.DateJoined,
+                                finishTaskCount = finishTask,
+                                pendingTaskCount = pendingTask,
+                                incompleteTaskCount = incompleteTask,
+                            };
+                            return View(employee);
+                        }
+                    }
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Employee does not exist"});
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return Json(new { success = false, message = "An error occurred while fetching employee details.", error = ex.Message });
+            }
+
+            return Json(new { success = false, message = "An error occurred." });
+        }
+
         // Specific HR function
         [Authorize(Roles = "HR")]
         public IActionResult Create()
@@ -69,6 +141,7 @@ namespace DemoWeb.Controllers
 
         [HttpPost]
         [Authorize(Roles = "HR")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Employee employee) // recevie employee models
         {
             try
@@ -80,7 +153,8 @@ namespace DemoWeb.Controllers
                 {
                     // remove null attribute 
                     ModelState.Remove("PositionList");
-
+                    ModelState.Remove("isActive");
+                  
                     // validation user input
                     if (ModelState.IsValid)
                     {
@@ -93,7 +167,7 @@ namespace DemoWeb.Controllers
                             EmployeeEmail = employee.EmployeeEmail,
                             EmployeePosition = employee.EmployeePosition,
                             DateJoined = employee.DateJoined,
-                            isActive = employee.isActive,
+                            isActive = true,
                             Password = employee.Password,
                         };
 
@@ -111,7 +185,7 @@ namespace DemoWeb.Controllers
 
             return Json(new { success = false, message = "Validation failed", errors = ModelState });
         }
-        #endregion
+       
 
         [Authorize(Roles = "HR, Employee")]
         public async Task<IActionResult> Edit(int? id)
@@ -157,6 +231,7 @@ namespace DemoWeb.Controllers
 
         [HttpPost]
         [Authorize(Roles = "HR, Employee")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Employee employee)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -225,6 +300,7 @@ namespace DemoWeb.Controllers
 
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "HR")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int? EmployeeId)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -247,6 +323,7 @@ namespace DemoWeb.Controllers
 
 		[HttpPost]
 		[Authorize(Roles = "HR")]
+        [ValidateAntiForgeryToken]
 		public async Task<IActionResult> Deactivate(int? EmployeeId)
 		{
 			if (EmployeeId == null)

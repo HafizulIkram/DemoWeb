@@ -94,12 +94,7 @@ namespace DemoWeb.Controllers
                     TaskDescription = t.TaskDescription
                 }).ToList();
 
-                /* var taskSelectList = tasks.Select(t => new SelectListItem
-                 {
-                     Value = t.TaskId.ToString(),
-                     Text = t.TaskTitle + " " +
-                     t.TaskDescription
-                 }).ToList();*/
+               
 
                 var employeeTaskModel = new EmployeeTask
                 {
@@ -111,9 +106,10 @@ namespace DemoWeb.Controllers
             }
         }
 
-        // POST: Create
+        // POST: Assign new task to employee
         [HttpPost]
         [Authorize(Roles = "Team Leader")] // Only allow TeamLeader role for Create POST
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeTask employeeTaskModel)
         {
             ModelState.Remove("TaskId");
@@ -122,6 +118,7 @@ namespace DemoWeb.Controllers
             ModelState.Remove("employee");
             ModelState.Remove("tasks");
             ModelState.Remove("TaskStatus");
+
             if (!ModelState.IsValid)
             {
                 return Json(new { success = false, message = "An error occurred"});
@@ -158,9 +155,10 @@ namespace DemoWeb.Controllers
             }
         }
 
+        // Partial View. List of Task
         [HttpGet]
         [Authorize(Roles = "Team Leader")]
-        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 2)
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
@@ -181,7 +179,7 @@ namespace DemoWeb.Controllers
 
                 var model = new PagedTaskViewModel
                 {
-                    Tasks = tasksList,
+                    EmployeeTasks = tasksList,
                     CurrentPage = page,
                     TotalPages = totalPages
                 };
@@ -191,6 +189,7 @@ namespace DemoWeb.Controllers
         }
 
 
+        // Get Task Details
         [Authorize(Roles = "Team Leader")]
         public async Task<IActionResult> Delete(int? EmployeeTaskId)
         {
@@ -255,8 +254,10 @@ namespace DemoWeb.Controllers
             }
         }
 
+        // Delete the task assign to specific employee
         [HttpPost, ActionName("Delete")]
         [Authorize(Roles = "Team Leader")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int? EmployeeTaskId)
         {
             try
@@ -287,7 +288,8 @@ namespace DemoWeb.Controllers
             }
         }
 
-        [HttpGet]
+        
+        // Update: Changing Task Status
         public async Task<IActionResult> AcceptTask(int employeeTaskId)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -331,6 +333,7 @@ namespace DemoWeb.Controllers
             }
         }
 
+        // Update: Changing Task Status
         public async Task<IActionResult> FinishTask(int employeeTaskId)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -374,7 +377,7 @@ namespace DemoWeb.Controllers
             }
         }
 
-        [HttpGet]
+        //GET: Task Details
         public async Task<IActionResult> TaskDetails(int employeeTaskId)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -420,6 +423,7 @@ namespace DemoWeb.Controllers
                         TaskTitle = employeeTaskEntities.Task.TaskTitle,
                         TaskPriority = employeeTaskEntities.Task.TaskPriority,
                         TaskDescription = employeeTaskEntities.Task.TaskDescription,
+                        DueDate = employeeTaskEntities.Task.DueDate,
 
                     },
 

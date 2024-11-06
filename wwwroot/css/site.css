@@ -29,57 +29,7 @@
     width: 70px; /* Adjust width as needed */
 }
 
-.panel {
-    font-family: 'roboto';
-    padding: 0;
-    border: none;
-    box-shadow: 0 .3rem .8rem rgba(0, 0, 0, .12);
-    margin-top: 100px;
-}
 
-.panel .panel-heading{
-    background: #fff;
-    padding: 25px 25px 10px;
-    border-radius: 0;
-}
-
-
-    .panel .panel-body {
-        border-radius: 0;
-    }
-
-        .panel .panel-body .table thead tr th {
-            color: #333;
-            font-size: 19px;
-            font-weight: 400;
-            padding: 12px;
-        }
-
-            
-
-        .panel .panel-body .table tbody tr td {
-            color: #555;
-            background: #fff;
-            font-size: 15px;
-            font-weight: 500;
-            padding: 10px;
-            vertical-align: middle;
-            border-color: #e7e7e7;
-        }
-
-        .panel .panel-body .table tbody .action-list li {
-           
-            display: inline-block;
-            
-        }
-
-            .panel .panel-body .table tbody .action-list li a {
-             
-                
-                font-size: 23px;
-                border: none;
-                transition: all 0.3s ease;
-            }
 
 body, html {
     height: 100%;
@@ -106,7 +56,8 @@ body, html {
     }
 
     .sidebar.collapsed .nav-link span,
-    .sidebar.collapsed .sidebar-footer span {
+    .sidebar.collapsed .sidebar-footer span, 
+    .sidebar.collapsed .navbar-brand {
         display: none;
     }
 
@@ -122,6 +73,96 @@ body, html {
     .main-content.collapsed {
         margin-left: 80px;
     }
+
+/* Headers styling */
+#taskList .row.mb-3 h5 {
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* Row styling with padding */
+#taskList .row.py-3 {
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+    #taskList .row.py-3:hover {
+        transform: scale(1.02);
+    }
+
+/* Spacing between rows */
+#taskList .row.my-2 {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Priority badge styles */
+.badge {
+    font-size: 0.875rem;
+    padding: 0.4em 0.6em;
+}
+
+/* Action icons */
+#taskList .col.text-center a {
+    font-size: 1.2rem;
+    text-decoration: none;
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+/* Pagination styles */
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: #ffffff;
+}
+
+.pagination .page-link {
+    color: #007bff;
+    border: 1px solid #dee2e6;
+    margin: 0 2px;
+}
+
+    .pagination .page-link:hover {
+        background-color: #e9ecef;
+        border-color: #dee2e6;
+    }
+
+.card {
+    border: none;
+    border-radius: 8px;
+    background-color: #FFFAFA;
+}
+
+    .card img {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+    }
+
+    .card .card-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+
+    .card p {
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+.display-4 {
+    font-size: 2.5rem;
+    font-weight: 600;
+}
 
 /* Fixed footer aligned to the right of the sidebar */
 footer {

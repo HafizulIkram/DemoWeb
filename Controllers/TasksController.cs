@@ -158,6 +158,7 @@ namespace DemoWeb.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Team Leader")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Tasks tasks)
         {
             try
@@ -211,7 +212,47 @@ namespace DemoWeb.Controllers
 
         }
 
+     
+        [Authorize(Roles = "Team Leader")]
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
+                var totalTasks = tasksEntity.Count;
+                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
+
+                var tasksList = tasksEntity
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(t => new Tasks
+                    {
+                        TaskId = t.TaskId,
+                        TaskTitle = t.TaskTitle,
+                        TaskDescription = t.TaskDescription,
+                        TaskPriority = t.TaskPriority,
+                        CreatedAt = t.CreatedAt,
+                        DueDate = t.DueDate
+                    })
+                    .ToList();
+
+                var model = new PagedTaskViewModel
+                {
+                    Tasks = tasksList,
+                    CurrentPage = page,
+                    TotalPages = totalPages
+                };
+
+                return PartialView("_TaskPartialView", model);
+            }
+        }
+
+
     }
+
+
+
+
 
 } 
 

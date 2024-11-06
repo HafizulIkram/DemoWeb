@@ -4,89 +4,24 @@
     ViewData["Title"] = "Tasks List";
 }
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    // Function to load a specific page of tasks
+    function loadTaskPage(page) {
+        $.get('@Url.Action("GetTaskList", "Tasks")', { page: page }, function (data) {
+            $('#taskListContainer').html(data);
+        });
+    }
 
+    // Load the first page on initial load
+    $(document).ready(function () {
+        loadTaskPage(1); // Loads the first page initially
+    });
+</script>
 
- <div class="container">
-     <div class="row">
-         <div class="col-md-1 col-md-10">
-             <div class="panel">
-                
-                <div class="panel-body table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TaskTitle)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TaskDescription)
-                                </th>
-                                <th>
-                                    @Html.DisplayNameFor(model => model.TaskPriority)
-                                </th>
-
-                               
-                                <th>
-                                    @Html.DisplayNameFor(model => model.CreatedAt)
-								</th>
-								<th>
-									@Html.DisplayNameFor(model => model.DueDate)
-								</th>
-                                <th>
-                                    Action
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                <tr>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskTitle)
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.TaskDescription)
-                                    </td>
-									<td>
-                                        @if (item.TaskPriority == "Urgent")
-                                        {
-                                            <span class="badge bg-warning text-dark">
-                                            @Html.DisplayFor(modelItem => item.TaskPriority)
-                                            </span>
-                                        }
-                                        @if (item.TaskPriority == "Normal")
-                                        {
-                                            <span class="badge bg-primary">
-                                                @Html.DisplayFor(modelItem => item.TaskPriority)
-                                            </span>
-                                        }
-
-									</td>
-									<td>
-										@Html.DisplayFor(modelItem => item.CreatedAt)
-									</td>
-                                    <td>
-                                        @Html.DisplayFor(modelItem => item.DueDate)
-                                    </td>
-									
-                                    <td>
-                                        <ul class="action-list">
-                                            <li>
-												<a asp-action="Edit" asp-route-id="@item.TaskId">
-                                                    <i class="lni lni-pen-to-square"></i>
-												</a>
-                                            </li>
-										
-                                        </ul>
-
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-             </div>
-             
-         </div>
-     </div>
- </div>
+<div class="container mt-4">
+    <h2>Task List</h2>
+    <div id="taskListContainer">
+        <!-- Task list content will be loaded here via AJAX -->
+    </div>
+</div>

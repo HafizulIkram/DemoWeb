@@ -1,22 +1,21 @@
 ﻿@model DemoWeb.Models.Employee
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "Employee Details";
 }
-
 
 <br />
 
 
 <div class="container my-5">
-    <h2 class="mb-4">Employee Profile</h2>
+    <h2 class="mb-4">@Model.EmployeeName Profile</h2>
 
     <div class="row">
         <!-- Profile Card -->
         <div class="col-md-4">
             <div class="card text-center shadow-sm">
                 <div class="card-body">
-                    
+
                     <h4 class="card-title">@Model.EmployeeName</h4>
                     <p class="text-muted">@Model.EmployeePosition</p>
                     <hr>
@@ -26,10 +25,10 @@
                             @(Model.isActive ? "Active" : "Inactive")
                         </span>
                     </p>
-                    <p><strong>Office:</strong> @Model.EmployeeAddress</p>
+                    <p><strong>Home Address:</strong> @Model.EmployeeAddress</p>
                     <p><strong>Email:</strong> @Model.EmployeeEmail</p>
                     <p><strong>Date Joined:</strong> @Model.DateJoined.ToString("yyyy-MM-dd")</p>
-                    <a asp-action="EditPassword" asp-controller="Home" class="btn btn-sm shadow-sm">Edit Password</a>
+                   
                 </div>
             </div>
         </div>

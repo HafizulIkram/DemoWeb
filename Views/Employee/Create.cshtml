@@ -25,9 +25,8 @@
                 EmployeePosition: $('#EmployeePosition').val(),
                 DateJoined: $('#DateJoined').val(),
                 Password: $('#Password').val(),
-                ConfirmPassword: $('#ConfirmPassword'),
-                isActive: $('#isActive').val(),
-
+                ConfirmPassword: $('#ConfirmPassword').val(),
+            
             };
 
 
@@ -135,20 +134,7 @@
                     <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 </div>
 
-                <!-- isActive (Radio Buttons) -->
-                <div class="mb-3">
-                    <label asp-for="isActive" class="form-label"></label>
-                    <div class="form-check">
-                        <input type="radio" asp-for="isActive" class="form-check-input" value="True" checked>
-                        <label class="form-check-label">Active</label>
-                    </div>
-                    <div class="form-check">
-                        <input type="radio" asp-for="isActive" class="form-check-input" value="False">
-                        <label class="form-check-label">Inactive</label>
-                    </div>
-                    <span asp-validation-for="isActive" class="text-danger"></span>
-                </div>
-
+               
                 <!-- Submit Button -->
                 <div class="d-grid">
                     <input type="button" id="btnCreate" value="Create" class="btn btn-primary" />
