@@ -16,7 +16,8 @@ namespace DemoWeb.Mapping
             References(x => x.Employee).Column("EmployeeId").LazyLoad();  // Yes, that's all.
             References(x => x.Task).Column("TaskId").LazyLoad();  // Yes, that's all.
             Map(x => x.TaskStatus);
-            Map(x => x.AssignDate); // 'HireDate' column
+            Map(x => x.AssignDate); 
+            Map(x => x.DueDate);
         }
     }
 }

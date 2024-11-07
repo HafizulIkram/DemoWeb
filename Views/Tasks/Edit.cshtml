@@ -27,7 +27,7 @@
                 TaskPriority: $('#TaskPriority').val(),
                 TaskStatus: $('#TaskStatus').val(),
                 CreatedAt: $('#CreatedAt').val(),
-                DueDate: $('#DueDate').val(),
+               
                 TaskId: id,
 
             };
@@ -71,7 +71,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+            <form  class="bg-white p-4 border rounded shadow">
+                @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 <input type="hidden" asp-for="TaskId" />
 
@@ -106,11 +107,7 @@
                     <span asp-validation-for="CreatedAt" class="text-danger"></span>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="DueDate" class="control-label"></label>
-                    <input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
-                    <span asp-validation-for="DueDate" class="text-danger"></span>
-                </div>
+               
 
                 <!-- Submit Button -->
                 <div class="d-grid">

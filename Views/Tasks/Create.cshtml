@@ -21,9 +21,8 @@
                 TaskDescription: $('#TaskDescription').val(),
                 TaskStatus: $('#TaskStatus').val(),
                 TaskPriority: $('#TaskPriority').val(),
-                DueDate: $('#DueDate').val(),
+               
                 CreatedAt: $('#CreatedAt').val(),
-
             };
 
             
@@ -44,7 +43,7 @@
                     $('.modal-body').text(data.message);
 
                     $('#exampleModal').modal('show');
-                    console.log({ data });
+                 
                 })
                 .fail((err) => {
                     $('.modal-body').text(data.errors.errorMessage);
@@ -60,14 +59,11 @@
 </script>
 
 
-
-
-
-
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
-                <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+                <form  class="bg-white p-4 border rounded shadow">
+                    @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <!-- Employee Name -->
@@ -100,12 +96,6 @@
                         <span asp-validation-for="CreatedAt" class="text-danger"></span>
                     </div>
 
-                    <!-- Date Joined -->
-                    <div class="form-group mb-3">
-                        <label asp-for="DueDate" class="control-label"></label>
-                        <input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
-                        <span asp-validation-for="DueDate" class="text-danger"></span>
-                    </div>
 
                    
                     <!-- Submit Button -->

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -19,8 +20,8 @@ namespace DemoWeb.Models
         [Required]
 		public  string EmployeePosition { get; set; }
 
-		[Required]
-		public  string EmployeeEmail { get; set; }
+		[DataType(DataType.EmailAddress)]
+		public string EmployeeEmail { get; set; }
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]

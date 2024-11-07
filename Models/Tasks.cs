@@ -22,10 +22,7 @@ namespace DemoWeb.Models
         [Display(Name = "Priority")]
         public string TaskPriority { get; set; }
 
-        [Required]
-        [DataType(DataType.Date)]
-        [Display(Name = "Due Date")]
-        public DateTime DueDate { get; set; }
+     
 
         [Required]
         [DataType(DataType.Date)]

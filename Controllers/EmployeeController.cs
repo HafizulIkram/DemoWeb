@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using DemoWeb.Entity;
+using Microsoft.AspNetCore.Identity;
+using NHibernate.Exceptions;
+
+using System.Data.SqlClient;
 
 namespace DemoWeb.Controllers
 {
@@ -12,18 +16,18 @@ namespace DemoWeb.Controllers
     {
 
         private readonly NHibernateHelper _nhibernateHelper;
+        private readonly IPasswordHasher<Employee> _passwordHasher;
 
-        public EmployeeController(NHibernateHelper nHibernateHelper)
+        public EmployeeController(NHibernateHelper nHibernateHelper, IPasswordHasher<Employee> passwordHasher)
         {
             _nhibernateHelper = nHibernateHelper;
+            _passwordHasher = passwordHasher;
         }
 
         // Specific HR Function
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> Index(string searchString)
         {
-
-            ViewData["CurrentFilter"] = searchString;
 
             using (var session = _nhibernateHelper.OpenSession())
             {
@@ -108,7 +112,7 @@ namespace DemoWeb.Controllers
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Employee does not exist"});
+                    return Json(new { success = false, message = "Employee does not exist" });
                 }
             }
             catch (Exception ex)
@@ -154,7 +158,12 @@ namespace DemoWeb.Controllers
                     // remove null attribute 
                     ModelState.Remove("PositionList");
                     ModelState.Remove("isActive");
-                  
+
+                    // Check if Password and ConfirmPassword match
+                    if (employee.Password != employee.ConfirmPassword)
+                    {
+                        return Json(new { success = false, message = "Password and Confirm Password not similar" });
+                    }
                     // validation user input
                     if (ModelState.IsValid)
                     {
@@ -168,7 +177,8 @@ namespace DemoWeb.Controllers
                             EmployeePosition = employee.EmployeePosition,
                             DateJoined = employee.DateJoined,
                             isActive = true,
-                            Password = employee.Password,
+                            Password = _passwordHasher.HashPassword(null, employee.Password),
+
                         };
 
                         // update the database
@@ -178,14 +188,20 @@ namespace DemoWeb.Controllers
                     }
                 }
             }
+            catch (Exception ex) when (IsUniqueConstraintViolation(ex))
+            {
+                // Return a JSON response for unique constraint violation
+                return Json(new { success = false, message = "An employee with this email already exists." });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "An error occurred", error = ex.Message });
+                // Handle other exceptions and log as needed
+                return Json(new { success = false, message = "An error occurred while creating the employee.", error = ex.Message });
             }
 
             return Json(new { success = false, message = "Validation failed", errors = ModelState });
         }
-       
+
 
         [Authorize(Roles = "HR, Employee")]
         public async Task<IActionResult> Edit(int? id)
@@ -230,7 +246,7 @@ namespace DemoWeb.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "HR, Employee")]
+        [Authorize(Roles = "HR")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Employee employee)
         {
@@ -238,127 +254,135 @@ namespace DemoWeb.Controllers
             {
                 ModelState.Remove("PositionList");
                 ModelState.Remove("ConfirmPassword");
-                
+
                 if (ModelState.IsValid)
                 {
                     using (var transaction = session.BeginTransaction())
                     {
-                        EmployeeEntity employeeEntity = new EmployeeEntity
+                        try
                         {
-                            EmployeeId = employee.EmployeeId,
-                            EmployeeName = employee.EmployeeName,
-                            EmployeeAddress = employee.EmployeeAddress,
-                            EmployeeEmail = employee.EmployeeEmail,
-                            EmployeePosition = employee.EmployeePosition,
-                            DateJoined = employee.DateJoined,
-                            isActive = employee.isActive,
-                            Password = employee.Password,
-                        };
+                            EmployeeEntity employeeEntity = new EmployeeEntity
+                            {
+                                EmployeeId = employee.EmployeeId,
+                                EmployeeName = employee.EmployeeName,
+                                EmployeeAddress = employee.EmployeeAddress,
+                                EmployeeEmail = employee.EmployeeEmail,
+                                EmployeePosition = employee.EmployeePosition,
+                                DateJoined = employee.DateJoined,
+                                isActive = employee.isActive,
+                                Password = employee.Password,
+                            };
 
-                        session.Update(employeeEntity);
-                        transaction.Commit();
-                        return Json(new { success = true, message = "Employee successfully Edit" });
+                            session.Update(employeeEntity);
+                            transaction.Commit();
+                            return Json(new { success = true, message = "Employee successfully edited." });
+                        }
+                        catch (Exception ex)
+                        {
+
+                            return Json(new { success = false, message = "An error occurred while editing the employee: " + ex.Message });
+                        }
                     }
                 }
             }
 
-            return View(employee);
+            return Json(new { success = false, message = "Invalid model state." });
         }
 
-        [Authorize(Roles = "HR")]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            using (var session = _nhibernateHelper.OpenSession())
-            {
-                var employeeEntity = await session.QueryOver<EmployeeEntity>().Where(e => e.EmployeeId == id).SingleOrDefaultAsync();
 
-                if (employeeEntity == null)
-                {
-                    return NotFound();
-                }
-
-                Employee employee = new Employee
-                {
-                    EmployeeId = employeeEntity.EmployeeId,
-                    EmployeeName = employeeEntity.EmployeeName,
-                    EmployeeAddress = employeeEntity.EmployeeAddress,
-                    EmployeeEmail = employeeEntity.EmployeeEmail,
-                    EmployeePosition = employeeEntity.EmployeePosition,
-                    isActive = employeeEntity.isActive,
-                    Password = employeeEntity.Password,
-                    DateJoined = employeeEntity.DateJoined
-                };
-
-                return View(employee);
-            }
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [Authorize(Roles = "HR")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int? EmployeeId)
+        public async Task<IActionResult> Deactivate(int? EmployeeId)
         {
-            using (var session = _nhibernateHelper.OpenSession())
+            if (EmployeeId == null)
             {
-                var employee = await session.QueryOver<EmployeeEntity>().Where(e => e.EmployeeId == EmployeeId).SingleOrDefaultAsync();
+                return Json(new { success = false, message = "Invalid employee ID." });
+            }
 
-                if (employee != null)
+            try
+            {
+                using (var session = _nhibernateHelper.OpenSession())
                 {
+                    var employee = await session.QueryOver<EmployeeEntity>()
+                                                .Where(e => e.EmployeeId == EmployeeId)
+                                                .SingleOrDefaultAsync();
+
+                    if (employee == null)
+                    {
+                        return Json(new { success = false, message = "Employee not found." });
+                    }
+
                     using (var transaction = session.BeginTransaction())
                     {
-                        session.Delete(employee);
+                        employee.isActive = false;
+                        session.Update(employee);
                         await transaction.CommitAsync();
-                        return RedirectToAction(nameof(Index));
                     }
-                }
 
-                return NotFound();
+                    return Json(new { success = true, message = "Employee deactivated successfully." });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional)
+                return Json(new { success = false, message = "An error occurred while deactivating the employee.", error = ex.Message });
             }
         }
 
-		[HttpPost]
-		[Authorize(Roles = "HR")]
-        [ValidateAntiForgeryToken]
-		public async Task<IActionResult> Deactivate(int? EmployeeId)
-		{
-			if (EmployeeId == null)
-			{
-				return Json(new { success = false, message = "Invalid employee ID." });
-			}
+        [Authorize(Roles = "HR")]
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                var employeeEntity = await session.QueryOver<EmployeeEntity>().ListAsync();
+                var totalTasks = employeeEntity.Count;
+                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
 
-			try
+                var employeeList = employeeEntity
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(e => new Employee
+                    {
+                        EmployeeId = e.EmployeeId,
+                       EmployeeName = e.EmployeeName,
+                       EmployeeEmail = e.EmployeeEmail,
+                       EmployeeAddress = e.EmployeeAddress,
+                       EmployeePosition = e.EmployeePosition,
+                       DateJoined = e.DateJoined,
+                       isActive = e.isActive,
+                    })
+                    .ToList();
+
+                var model = new PagedTaskViewModel
+                {
+                    Employees = employeeList,
+                    CurrentPage = page,
+                    TotalPages = totalPages
+                };
+
+                return PartialView("_EmployeePartialView", model);
+            }
+        }
+
+        // Helper method to check if exception is a unique constraint violation
+        private bool IsUniqueConstraintViolation(Exception ex)
+        {
+			// Check if exception is a GenericADOException, which NHibernate typically uses
+			if (ex is GenericADOException adoEx && adoEx.InnerException is SqlException sqlEx)
 			{
-				using (var session = _nhibernateHelper.OpenSession())
+				// Iterate through the SQL errors to check for unique constraint violations
+				foreach (SqlError error in sqlEx.Errors)
 				{
-					var employee = await session.QueryOver<EmployeeEntity>()
-												.Where(e => e.EmployeeId == EmployeeId)
-												.SingleOrDefaultAsync();
-
-					if (employee == null)
+					if (error.Number == 2627 || error.Number == 2601)
 					{
-						return Json(new { success = false, message = "Employee not found." });
+						return true; // Unique constraint violation
 					}
-
-					using (var transaction = session.BeginTransaction())
-					{
-						employee.isActive = false;
-						session.Update(employee);
-						await transaction.CommitAsync();
-					}
-
-					return Json(new { success = true, message = "Employee deactivated successfully." });
 				}
 			}
-			catch (Exception ex)
-			{
-				// Log the exception (optional)
-				return Json(new { success = false, message = "An error occurred while deactivating the employee.", error = ex.Message });
-			}
+			return false; // Not a unique constraint violation
+
 		}
 	}
 }

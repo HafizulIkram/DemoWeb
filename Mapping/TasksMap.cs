@@ -17,7 +17,7 @@ namespace DemoWeb.Mapping
             Map(x => x.TaskDescription).Not.Nullable(); 
        
             Map(x => x.TaskPriority).Not.Nullable(); 
-            Map(x => x.DueDate);
+          
             Map(x => x.CreatedAt).Not.Nullable();
 
             HasMany(x => x.EmployeeTasks)

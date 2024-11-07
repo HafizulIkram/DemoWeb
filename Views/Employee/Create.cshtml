@@ -3,21 +3,18 @@
 @{
     ViewData["Title"] = "Add New Employee";
 }
-
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
 
-        // On clicking the login button
         $('#btnCreate').click(function (e) {
             e.preventDefault(); // Prevent default form submission
 
             // Get anti-forgery token
             var token = $("input[name='__RequestVerificationToken']").val();
 
-            // Collect form data, including the RequestVerificationToken
-            const data = {
+            
+             const data = {
                 _RequestVerificationToken: token,
                 EmployeeName: $('#EmployeeName').val(),
                 EmployeeEmail: $('#EmployeeEmail').val(),
@@ -26,35 +23,13 @@
                 DateJoined: $('#DateJoined').val(),
                 Password: $('#Password').val(),
                 ConfirmPassword: $('#ConfirmPassword').val(),
-            
-            };
+
+             };
 
 
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Create", "Employee")',
-                data: data,
-                headers: {
-                    'RequestVerificationToken': token // Add the token in headers
-                }
-            })
-                .done((data) => {
-
-                    $('.modal-body').text(data.message);
-
-                    $('#exampleModal').modal('show');
-                    console.log({ data });
-                })
-                .fail((err) => {
-                    $('.modal-body').text(data.errors.errorMessage);
-
-                    $('#exampleModal').modal('show');
-                    console.error(err);
-                })
-                .always(() => {
-                    console.log('always called');
-                });
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("Create", "Employee")';
+            sendAjaxRequest(url, data, token);
         });
     });
 </script>
@@ -63,7 +38,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+            <form id="createEmployee" class="bg-white p-4 border rounded shadow">
+                @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <!-- Employee Name -->

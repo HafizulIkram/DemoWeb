@@ -1,4 +1,7 @@
-﻿namespace DemoWeb.Entity
+﻿using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.ComponentModel.DataAnnotations;
+
+namespace DemoWeb.Entity
 {
     public class EmployeeEntity
     {
@@ -13,11 +16,12 @@
 
         public virtual string EmployeePosition { get; set; }
 
+        [DataType(DataType.EmailAddress)]
+		public virtual string EmployeeEmail { get; set; }
 
-        public virtual string EmployeeEmail { get; set; }
 
- 
-        public virtual string Password { get; set; }
+
+		public virtual string Password { get; set; }
 
    
         public virtual bool isActive { get; set; }

@@ -4,13 +4,12 @@
     ViewData["Title"] = "Edit Employee Details";
 }
 
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
 
         // On clicking the login button
-        $('#btnCreate').click(function (e) {
+        $('#btnEdit').click(function (e) {
             e.preventDefault(); // Prevent default form submission
 
             // Get anti-forgery token
@@ -20,6 +19,7 @@
             const data = {
                 _RequestVerificationToken: token,
                 EmployeeName: $('#EmployeeName').val(),
+                EmployeeId: $('#EmployeeId').val(),
                 EmployeeEmail: $('#EmployeeEmail').val(),
                 EmployeeAddress: $('#EmployeeAddress').val(),
                 EmployeePosition: $('#EmployeePosition').val(),
@@ -30,31 +30,8 @@
             };
 
 
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Edit", "Employee")',
-                data: data,
-                headers: {
-                    'RequestVerificationToken': token // Add the token in headers
-                }
-            })
-                .done((data) => {
-
-                    $('.modal-body').text(data.message);
-
-                    $('#exampleModal').modal('show');
-                    console.log({ data });
-                })
-                .fail((err) => {
-                    $('.modal-body').text(data.errors.errorMessage);
-
-                    $('#exampleModal').modal('show');
-                    console.error(err);
-                })
-                .always(() => {
-                    console.log('always called');
-                });
+             const url = '@Url.Action("Edit", "Employee")';
+            sendAjaxRequest(url, data, token);
         });
     });
 </script>
@@ -64,9 +41,11 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6 col-lg-5">
-            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+            <form class="bg-white p-4 border rounded shadow">
+                @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                 <input type="hidden" asp-for="EmployeeId" />
+                <input type="hidden" asp-for="EmployeeName" />
                 <input type="hidden" asp-for="Password" />
                 <input type="hidden" asp-for="DateJoined" />
                 <input type="hidden" asp-for="isActive" />
@@ -103,15 +82,29 @@
 
                 <!-- Submit Button -->
                 <div class="d-grid">
-                    <input type="button" id="btnCreate" value="Create" class="btn btn-primary" />
+                    <input type="button" id="btnEdit" value="Edit" class="btn btn-primary" />
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ...
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

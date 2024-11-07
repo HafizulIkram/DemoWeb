@@ -25,23 +25,24 @@
                                     <strong>Assigned to:</strong> @task.employee.EmployeeName <br /> <!-- Access Employee Name -->
                                     <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
                                     <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
-                                    <strong>Due Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
+                                    <strong>Assign Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
+                                    <strong>Due Date:</strong> @task.DueDate.ToShortDateString()  <!-- Access Assign Date -->
                                 </p>
 
                                 <div class="btn-group">
                                     <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-info">Details</a>
 
-                                    @if (User.IsInRole("Team Leader"))
-                                    {
-                                        <a asp-action="Delete" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Delete</a>
-                                    }
-
-
+                                 
 
                                     <!-- Only show the Accept Task button if the task status is 'Incomplete' -->
                                     @if (task.TaskStatus == "Incomplete")
                                     {
                                         <a asp-action="AcceptTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Accept Task</a>
+
+                                        @if (User.IsInRole("Team Leader"))
+                                        {
+                                            <a asp-action="Delete" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Delete</a>
+                                        }
                                     }
 
                                     @if (task.TaskStatus == "Pending")

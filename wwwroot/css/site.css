@@ -2,7 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 
-
+.container{
+   object-position: center;
+}
 
 .search-section {
     margin-bottom: 20px;

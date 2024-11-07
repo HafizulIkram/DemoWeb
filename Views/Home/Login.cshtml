@@ -1,76 +1,34 @@
 ﻿@model DemoWeb.Models.Employee
 @{
 	ViewData["Title"] = "Task Management Homepage";
-	Layout = null; // Set layout to null (no layout)
+	Layout = "_LoginPage";
 }
+
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-	$(document).ready(function () {
+    $(document).ready(function () {
 
-		// On clicking the login button
-		$('#loginBtn').click(function (e) {
-			e.preventDefault(); // Prevent default form submission
+        $('#loginBtn').click(function (e) {
+            e.preventDefault(); // Prevent default form submission
 
-			// Get anti-forgery token
+            // Get anti-forgery token
 			var token = $("input[name='__RequestVerificationToken']").val();
 
 			// Gather form data
-			var loginData = {
+			const data = {
 				_RequestVerificationToken: token,
 				EmployeeEmail: $('#EmployeeEmail').val(),
 				Password: $('#Password').val(),
 			};
 
-			// Perform AJAX POST request
-			$.ajax({
-				type: 'POST',
-				url: '@Url.Action("Login", "Home")',
-				data: loginData,
-				headers: {
-					'RequestVerificationToken': token // Add the token in headers
-
-				}
-			})
-				.done((data) => {
-					if (data.success) {
-						window.location.href = data.redirectUrl; // Redirect to a new page on success
-					} else {
-						$('.modal-body').text(data.message)
-
-						$('#exampleModal').modal('show');
-						console.error(data);
-					}
-				})
-				.fail((err) => {
-					$('.modal-body').text(data.errors.errorMessage);
-
-					$('#exampleModal').modal('show');
-					console.error(err);
-				})
-				.always(() => {
-					console.log(data);
-				});
-		});
-	});
+			
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("Login", "Home")';
+            sendAjaxRequest(url, data, token);
+        });
+    });
 </script>
-
-
-
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Task Management Software</title>
-
-	<!-- Correct way to call CSS file -->
-	<link rel="stylesheet" href="~/css/Test.css" asp-append-version="true" />
-	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-	<!-- External FontAwesome CDN -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-	<script src="~/lib/jquery/dist/jquery.min.js"></script>
-	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="~/js/site.js" asp-append-version="true"></script>
-</head>
-
 
 
 
@@ -83,16 +41,17 @@
 	</div>
 
 	<!-- Use ASP.NET Core form helpers -->
-	<form asp-action="Login" asp-controller="Home" method="post" class="p-3 mt-3">
+	<form class="p-3 mt-3">
+		 @Html.AntiForgeryToken()
 		<!-- Username Field -->
-		<div class="form-field d-flex align-items-center">
+		<div class="form-field  align-items-center">
 			<label asp-for="EmployeeEmail" class="sr-only"></label>
 			<input asp-for="EmployeeEmail" class="form-control"  placeholder="Email">
 			<span asp-validation-for="EmployeeEmail" class="text-danger"></span>
 		</div>
 
 		<!-- Password Field -->
-		<div class="form-field d-flex align-items-center mt-3">
+		<div class="form-field  align-items-center mt-3">
 			<label asp-for="Password" class="sr-only"></label>
 			<input asp-for="Password" type="password" class="form-control" placeholder="Password">
 			<span asp-validation-for="Password" class="text-danger"></span>

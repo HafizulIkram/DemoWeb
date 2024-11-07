@@ -19,7 +19,7 @@ namespace DemoWeb.Entity
         public virtual string TaskPriority { get; set; }
 
         
-        public virtual DateTime DueDate { get; set; }
+       
 
       
         public virtual DateTime CreatedAt { get; set; }

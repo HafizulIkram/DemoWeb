@@ -1,196 +1,27 @@
 ﻿@model IEnumerable<DemoWeb.Models.Employee>
-@{
-	ViewData["Title"] = "Employee List";
-}
 
+@{
+    ViewData["Title"] = "Employee List";
+}
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-	$(document).ready(function () {
-		// Handle search input 'Enter' key press
-		$('#searchInput').on('keydown', function (e) {
-			if (e.key === 'Enter') {
-				e.preventDefault(); // Prevent the default form submission
-			}
-		});
+    // Function to load a specific page of tasks
+       function loadTaskPage(page) {
+           $.get('@Url.Action("GetTaskList", "Employee")', { page: page }, function (data) {
+                  $('#employeeListContainer').html(data);
+                 });
+          }
 
-		// Handle the deactivate button click and show modal
-		$(document).on('click', '#btnDeactivate', function (e) {
-			e.preventDefault();
-
-			// Show modal when deactivate button is clicked
-			$('#exampleModal').modal('show');
-
-			// Get the EmployeeId from the button's data attribute or hidden input
-			var employeeId = $(this).data('employee-id') || $(this).attr('asp-route-id');
-			console.log("EmployeeId:", employeeId);
-
-			// Remove any existing event handlers to prevent multiple triggers
-			$('#btnConfirm').off('click').on('click', function (e) {
-				e.preventDefault();
-
-				// Get anti-forgery token
-				var token = $("input[name='__RequestVerificationToken']").val();
-
-				// Collect form data, including the EmployeeId
-				const data = {
-					_RequestVerificationToken: token,
-					EmployeeId: employeeId,
-				};
-
-				console.log(data);
-
-				// Send AJAX request
-				$.ajax({
-					type: 'POST',
-					url: '@Url.Action("Deactivate", "Employee")',
-					data: data,
-					headers: {
-						'RequestVerificationToken': token
-					}
-				})
-					.done((data) => {
-						// Display success message in the modal
-						$('.modal-body').text(data.message);
-
-						// Show the modal again with the success message
-						$('#exampleModal').modal('show');
-						console.log({ data });
-
-						// Reload page when modal is closed
-						$('#exampleModal').on('hidden.bs.modal', function () {
-							location.reload();
-						});
-					})
-					.fail((err) => {
-						// Display error message in the modal
-						$('.modal-body').text(err.responseJSON?.message || "An error occurred.");
-
-						// Show the modal again with the error message
-						$('#exampleModal').modal('show');
-						console.error(err);
-					})
-					.always(() => {
-						console.log('AJAX request complete');
-					});
-			});
-		});
-
-		// Reload page when the modal is closed manually (outside of AJAX request)
-		$('#exampleModal').on('hidden.bs.modal', function () {
-			location.reload();
-		});
-
-
-
-		});
+     // Load the first page on initial load
+       $(document).ready(function () {
+           loadTaskPage(1); // Loads the first page initially
+          });
 </script>
 
-
-
-<!-- Container for Search and Add Button -->
-<div class="container-lg mb-5">
-	<div class="row">
-		<div class="col-md-10 mx-auto">
-			<div class="row">
-				<div class="col-md-8">
-					<form asp-action="Index" method="get" id="searchForm" class="d-flex">
-						<input type="text" name="SearchString" id="searchInput" class="form-control" value="@ViewData["CurrentFilter"]" placeholder="Search employees..." />
-						<button type="submit" class="btn btn-primary ml-2">
-							<i class="bi bi-search"></i> Search
-						</button>
-					</form>
-				</div>
-				
-			</div>
-		</div>
-	</div>
-</div>
-
-<!-- Container for Employee List Table -->
-<div class="container-lg">
-	<div class="row justify-content-center">
-		<div class="col-md-10">
-			<div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
-				<table class="table table-bordered table-hover text-center">
-					<thead class="table-light">
-						<tr>
-							<th>Name</th>
-							<th>Email</th>
-							<th>Position</th>
-							<th>Address</th>
-							<th>Joined Date</th>
-							<th>Actions</th>
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (var employee in Model)
-						{
-							<tr>
-								<td>@Html.DisplayFor(modelItem => employee.EmployeeName)</td>
-								<td>@Html.DisplayFor(modelItem => employee.EmployeeEmail)</td>
-								<td>@Html.DisplayFor(modelItem => employee.EmployeePosition)</td>
-								<td>@Html.DisplayFor(modelItem => employee.EmployeeAddress)</td>
-								<td>@Html.DisplayFor(modelItem => employee.DateJoined)</td>
-								<td>
-									<div class="btn-group" role="group">
-										<a asp-action="Edit" asp-route-id="@employee.EmployeeId" class="btn btn-sm btn-outline-primary action-btn">Edit</a>
-										<a asp-action="Details" asp-route-id="@employee.EmployeeId" class="btn btn-sm btn-outline-info action-btn">Details</a>
-										<a asp-action="Delete" asp-route-id="@employee.EmployeeId" class="btn btn-sm btn-outline-danger action-btn">Delete</a>
-										@if (employee.isActive)
-										{
-											<a asp-action="Deactivate" asp-route-id="@employee.EmployeeId" class="btn btn-sm btn-outline-warning action-btn">Deactivate</a>
-										}
-									</div>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	</div>
-</div>
-
-
-
-
-
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure to deactivate employee?
-            </div>
-            <div class="modal-footer">
-				<button type="button" class="btn btn-secondary" id="btnConfirm" >Yes</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
+<div class="container mt-4">
+    <h2>Task List</h2>
+    <div id="employeeListContainer">
+       
     </div>
 </div>
-
-@* <div class="row">
-	<div class="col-md-12 text-right">
-		<div class="pagination-controls">
-			<a asp-action="Index"
-			   asp-route-pageNumber="@(Model.PageIndex - 1)"
-			   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-			   class="btn btn-outline-secondary @(!Model.HasPreviousPage ? "disabled" : "")">
-				Previous
-			</a>
-			<a asp-action="Index"
-			   asp-route-pageNumber="@(Model.PageIndex + 1)"
-			   asp-route-currentFilter="@ViewData["CurrentFilter"]"
-			   class="btn btn-outline-secondary @(!Model.HasNextPage ? "disabled" : "")">
-				Next
-			</a>
-		</div>
-	</div>
-</div>
-	</div> *@

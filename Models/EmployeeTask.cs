@@ -23,6 +23,11 @@ namespace DemoWeb.Models
         [Required]
         public string TaskStatus { get; set; }
 
+        [Required]
+        [DataType(DataType.Date)]
+        [Display(Name = "Due Date")]
+        public DateTime DueDate { get; set; }
+
 
         // Properties for the dropdown lists
         public List<SelectListItem> EmployeesList { get; set; }  // List for Employees dropdown
@@ -44,7 +49,7 @@ namespace DemoWeb.Models
             public string TaskStatus { get; set; }
             public string TaskPriority { get; set; }
             public string TaskDescription { get; set; }
-            public DateTime DueDate { get; set; }
+           
 
         }
 

@@ -1,4 +1,6 @@
-﻿<div id="taskList" class="container">
+﻿@model DemoWeb.Models.PagedTaskViewModel
+
+<div id="taskList" class="container">
     <div class="row mb-3 justify-content-center">
         <div class="col-2">
             <h5>Title</h5>
@@ -12,9 +14,7 @@
         <div class="col-2">
             <h5>Created At</h5>
         </div>
-        <div class="col-2">
-            <h5>Due Date</h5>
-        </div>
+       
         <div class="col-1 text-center">
             <h5>Action</h5>
         </div>
@@ -42,9 +42,7 @@
             <div class="col-2">
                 <span>@task.CreatedAt.ToString("yyyy-MM-dd")</span>
             </div>
-            <div class="col-2">
-                <span>@task.DueDate.ToString("yyyy-MM-dd")</span>
-            </div>
+           
             <div class="col-1 text-center">
                 <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })" class="text-primary me-2">
                     <i class="fa-solid fa-pencil"></i>

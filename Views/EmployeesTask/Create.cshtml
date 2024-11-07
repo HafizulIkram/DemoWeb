@@ -28,13 +28,7 @@
     }
 
     $(document).ready(function () {
-        // Prevent Enter key in search field from submitting the form
-        $("#taskSearch").on("keydown", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault(); // Prevent form submission
-            }
-        });
-
+     
         // Search filter functionality
         $("#taskSearch").on("input", function () {
             var searchQuery = $(this).val().toLowerCase();
@@ -70,33 +64,13 @@
                 _RequestVerificationToken: token,
                 EmployeeId: $('#EmployeeId').val(),
                 TaskListId: selectedTasks, // Pass selected task IDs as an array
-                AssignDate: $('#AssignDate').val(),
+            
+                DueDate: $('#DueDate').val(),
             };
 
-            console.log(data);
-
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Create", "EmployeesTask")',
-                data: data,
-                headers: {
-                    'RequestVerificationToken': token // Add the token in headers
-                }
-            })
-                .done((data) => {
-                    $('.modal-body').text(data.message);
-                    $('#exampleModal').modal('show');
-                    console.log({ data });
-                })
-                .fail((err) => {
-                    $('.modal-body').text(err.responseJSON.errors.errorMessage);
-                    $('#exampleModal').modal('show');
-                    console.error(err);
-                })
-                .always(() => {
-                    console.log('Request completed');
-                });
+             // Use the helper function for the AJAX request
+            const url = '@Url.Action("Create", "EmployeesTask")';
+            sendAjaxRequest(url, data, token);
         });
     });
 </script>
@@ -107,7 +81,8 @@
 <div class="container">
     <div class="row justify-content-center flex align-items-center">
         <div class="col-md-6 col-lg-5">
-            <form asp-action="Create" method="post" asp-controller="employee" class="bg-white p-4 border rounded shadow">
+            <form class="bg-white p-4 border rounded shadow">
+                @Html.AntiForgeryToken()
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <!-- Employee Name -->
@@ -134,14 +109,15 @@
                     <span asp-validation-for="TaskId" class="text-danger"></span>
                 </div>
 
-                <!-- Date Joined -->
-                <div class="form-group mb-3">
-                    <label asp-for="AssignDate" class="form-label"></label>
+                
+
+                 <div class="form-group mb-3">
+                    <label asp-for="DueDate" class="form-label"></label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fa fa-calendar"></i></span>
-                        <input asp-for="AssignDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
+                        <input asp-for="DueDate" class="form-control" asp-format="{0:dd/MM/yyyy}" />
                     </div>
-                    <span asp-validation-for="AssignDate" class="text-danger"></span>
+                    <span asp-validation-for="DueDate" class="text-danger"></span>
                 </div>
 
                 <!-- Submit Button -->

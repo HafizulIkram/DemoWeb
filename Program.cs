@@ -1,5 +1,7 @@
 using DemoWeb.Data;
+using DemoWeb.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using NHibernate;
 using System.Configuration;
 
@@ -7,8 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages()
     .AddRazorRuntimeCompilation();
+
 // Register NHibernateHelper as a singleton service
 builder.Services.AddSingleton<NHibernateHelper>();
+
+builder.Services.AddScoped<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -18,6 +24,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Home/Login";
         options.AccessDeniedPath = "/Home/Index";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+        options.SlidingExpiration = true;
     });
 
 

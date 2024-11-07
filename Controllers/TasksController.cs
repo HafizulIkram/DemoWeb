@@ -34,8 +34,7 @@ namespace DemoWeb.Controllers
 
                 if (!string.IsNullOrEmpty(searchString))
                 {
-                    //taskEntity = taskEntity.WhereRestrictionOn(x => x.TaskTitle)
-                    //             .IsInsensitiveLike($"%{searchString}%");
+                          
                 }
 
 
@@ -47,13 +46,10 @@ namespace DemoWeb.Controllers
                     TaskPriority = entity.TaskPriority,
                    
                     TaskTitle = entity.TaskTitle,
-                    DueDate = entity.DueDate,
+                  
                     CreatedAt = entity.CreatedAt,
 
                 });
-
-
-              
 
                 return View(tasks);
             }
@@ -79,41 +75,55 @@ namespace DemoWeb.Controllers
         [Authorize(Roles = "Team Leader")]
         public async Task<IActionResult> Create(Tasks tasks)
         {
-           
             ModelState.Remove("PriorityList");
             if (ModelState.IsValid)
             {
-                using (var session = _nhibernateHelper.OpenSession())
-                using (var transaction = session.BeginTransaction())
+                try
                 {
-                    // Convert TaskViewModel to TaskEntity
-                    var taskEntity = new TaskEntity
+                    using (var session = _nhibernateHelper.OpenSession())
+                    using (var transaction = session.BeginTransaction())
                     {
-                        TaskTitle = tasks.TaskTitle,
-                        TaskDescription = tasks.TaskDescription,
-                        TaskPriority = tasks.TaskPriority,
-                     
-                        CreatedAt = tasks.CreatedAt, // If needed
-                        DueDate = tasks.DueDate         // If needed
-                    };
+                        // Convert TaskViewModel to TaskEntity
+                        var taskEntity = new TaskEntity
+                        {
+                            TaskTitle = tasks.TaskTitle,
+                            TaskDescription = tasks.TaskDescription,
+                            TaskPriority = tasks.TaskPriority,
+                            CreatedAt = tasks.CreatedAt, // If needed
+                           
+                        };
 
-                    // Save task to the database
-                    await session.SaveAsync(taskEntity);
-                    await transaction.CommitAsync();
+                        // Save task to the database
+                        await session.SaveAsync(taskEntity);
+                        await transaction.CommitAsync();
 
-                    return Json(new { success = true, message = "Task successfully created" });
+                        return Json(new { success = true, message = "Task successfully created." });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception if necessary (implement logging according to your framework)
+                    // Example: _logger.LogError(ex, "Error occurred while creating task.");
+
+                    return Json(new { success = false, message = "An error occurred while creating the task.", error = ex.Message });
                 }
             }
 
+            // Return validation errors if ModelState is invalid
             tasks.PriorityList = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "Urgent", Value = "Urgent" },
-                new SelectListItem { Text = "Normal", Value = "Normal" },
+    {
+        new SelectListItem { Text = "Urgent", Value = "Urgent" },
+        new SelectListItem { Text = "Normal", Value = "Normal" },
+    };
 
-            };
+            // Collect ModelState errors to send in the response
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                           .Select(e => e.ErrorMessage)
+                                           .ToList();
 
-            return Json(new { success = false, message = "Validation failed", errors = ModelState });
+            return Json(new { success = false, message = "Validation failed.", errors = errors });
         }
+
 
         [Authorize(Roles = "Team Leader")]
         public async Task<IActionResult> Edit(int? id)
@@ -140,7 +150,7 @@ namespace DemoWeb.Controllers
                     TaskDescription = TaskEntity.TaskDescription,
                     TaskPriority = TaskEntity.TaskPriority,
                     TaskTitle = TaskEntity.TaskTitle,
-                    DueDate = TaskEntity.DueDate,
+                 
                     CreatedAt = TaskEntity.CreatedAt,
                 };
 
@@ -177,7 +187,7 @@ namespace DemoWeb.Controllers
                                 TaskTitle = tasks.TaskTitle,
                                 TaskPriority = tasks.TaskPriority,
                              
-                                DueDate = tasks.DueDate,
+                              
                                 CreatedAt = tasks.CreatedAt,
                             };
 
@@ -212,7 +222,6 @@ namespace DemoWeb.Controllers
 
         }
 
-     
         [Authorize(Roles = "Team Leader")]
         public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
         {
@@ -232,7 +241,7 @@ namespace DemoWeb.Controllers
                         TaskDescription = t.TaskDescription,
                         TaskPriority = t.TaskPriority,
                         CreatedAt = t.CreatedAt,
-                        DueDate = t.DueDate
+                      
                     })
                     .ToList();
 
@@ -247,12 +256,7 @@ namespace DemoWeb.Controllers
             }
         }
 
-
     }
-
-
-
-
 
 } 
 

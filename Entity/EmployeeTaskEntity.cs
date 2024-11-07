@@ -15,6 +15,8 @@ namespace DemoWeb.Entity
 
         public virtual DateTime AssignDate { get; set; }
 
+        public virtual DateTime DueDate { get; set; }
+
         public virtual string TaskStatus { get; set; }
     }
 }

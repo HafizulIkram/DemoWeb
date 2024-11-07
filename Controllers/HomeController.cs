@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using static DemoWeb.Models.EmployeeTask;
+using Employee = DemoWeb.Models.Employee;
 
 
 namespace FirstWebApp.Controllers
@@ -15,10 +17,12 @@ namespace FirstWebApp.Controllers
     public class HomeController : Controller
     {
         private readonly NHibernateHelper _nhibernateHelper;
+        private readonly IPasswordHasher<DemoWeb.Models.Employee> _passwordHasher;
 
-        public HomeController(NHibernateHelper nHibernateHelper)
+        public HomeController(NHibernateHelper nHibernateHelper, IPasswordHasher<DemoWeb.Models.Employee> passwordHasher)
         {
             _nhibernateHelper = nHibernateHelper;
+            _passwordHasher = passwordHasher;
         }
 
         public IActionResult Index()
@@ -56,19 +60,30 @@ namespace FirstWebApp.Controllers
                     {
                         // Find employee based on email and password
                         var employeeEntity = await session.QueryOver<EmployeeEntity>()
-                            .Where(x => x.EmployeeEmail == loginModel.EmployeeEmail && x.Password == loginModel.Password)
+                            .Where(x => x.EmployeeEmail == loginModel.EmployeeEmail)
                             .SingleOrDefaultAsync();
 
-                        // Check if the employee exists and is active
                         if (employeeEntity != null)
                         {
-                            if (!employeeEntity.isActive) // Check if employee is active
-                            {
-                                return Json(new { success = false, message = "Your account is inactive. Please contact support." });
-                            }
 
-                            // Create claims for the logged-in user
-                            var claims = new List<Claim>
+                            var employee = new Employee
+                            {
+                                EmployeeId = employeeEntity.EmployeeId,
+                                EmployeeName = employeeEntity.EmployeeName,
+                                EmployeeEmail = employeeEntity.EmployeeEmail,
+                                Password = employeeEntity.Password,
+                            };
+
+							
+							if (_passwordHasher.VerifyHashedPassword(employee, employee.Password, loginModel.Password) == PasswordVerificationResult.Success)
+							{
+								if (!employeeEntity.isActive) // Check if employee is active
+								{
+									return Json(new { success = false, message = "Your account is inactive. Please contact support." });
+								}
+
+								// Create claims for the logged-in user
+								var claims = new List<Claim>
 							{
 								new Claim(ClaimTypes.Name, employeeEntity.EmployeeName),
 								new Claim(ClaimTypes.Email, employeeEntity.EmployeeEmail),
@@ -76,15 +91,18 @@ namespace FirstWebApp.Controllers
 								new Claim(ClaimTypes.Role, employeeEntity.EmployeePosition) // Add role claims as necessary
 							};
 
-                            // Create the identity and sign in the user
-                            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                            var principal = new ClaimsPrincipal(identity);
-                            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+								// Create the identity and sign in the user
+								var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+								var principal = new ClaimsPrincipal(identity);
+								await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-                            // Return success response with redirect URL
-                            return Json(new { success = true, redirectUrl = Url.Action("Index", "EmployeesTask") });
-                        }
+								// Return success response with redirect URL
+								return Json(new { success = true, redirectUrl = Url.Action("Index", "EmployeesTask") });
+							}
+						}
+
                     }
+                   
                 }
             }
             catch (Exception ex)
@@ -109,44 +127,24 @@ namespace FirstWebApp.Controllers
 			{
 				try
 				{
-					if (employee.Password == null)
-					{
-						// Check if employee exists based on email, name, and address
-						var employeeEntity = await session.QueryOver<EmployeeEntity>()
-							.Where(x => x.EmployeeEmail == employee.EmployeeEmail &&
-										x.EmployeeName == employee.EmployeeName)
-							.SingleOrDefaultAsync();
+                    // Check if employee exists based on email, name, and address
+                    var employeeEntity = await session.QueryOver<EmployeeEntity>()
+                        .Where(x => x.EmployeeEmail == employee.EmployeeEmail)
+                                  
+                        .SingleOrDefaultAsync();
 
-						if (employeeEntity != null)
-						{
-							// Employee exists, prompt to enter new password
-							return Json(new { success = true, message = "Employee found. Enter new password." });
-						}
-						else
-						{
-							// Employee does not exist
-							return Json(new { success = false, message = "Employee does not exist." });
-						}
-					}
-					else
-					{
-						// Update the password if the employee exists
-						var employeeEntity = await session.QueryOver<EmployeeEntity>()
-							.Where(x => x.EmployeeEmail == employee.EmployeeEmail)
-							.SingleOrDefaultAsync();
+                    if (employeeEntity != null)
+                    {
+                        // Employee exists, prompt to enter new password
+                        return Json(new { success = true, message = "Employee found. Enter new password." });
+                    }
+                    else
+                    {
+                        // Employee does not exist
+                        return Json(new { success = false, message = "Employee does not exist." });
+                    }
 
-						if (employeeEntity != null)
-						{
-							employeeEntity.Password = employee.Password;
-							session.Update(employeeEntity);
-							await session.FlushAsync();
-
-							return Json(new { success = true, message = "Password updated successfully." });
-						}
-
-						return Json(new { success = false, message = "Error updating password." });
-					}
-				}
+                }
 				catch (Exception ex)
 				{
 					return Json(new { success = false, message = "An error occurred.", error = ex.Message });
@@ -156,7 +154,7 @@ namespace FirstWebApp.Controllers
 
 		[HttpPost]
         [ValidateAntiForgeryToken]
-		public async Task<IActionResult> UpdatePassword(string EmployeeEmail, string Password)
+		public async Task<IActionResult> UpdatePassword(string EmployeeEmail, string Password, string ConfirmPassword)
 		{
 			using (var session = _nhibernateHelper.OpenSession())
 			{
@@ -169,22 +167,20 @@ namespace FirstWebApp.Controllers
 						return Json(new { success = false, message = "New password cannot be empty." });
 					}
 
+                    if (!Password.Equals(ConfirmPassword))
+                    {
+						return Json(new { success = false, message = "Password does not match" });
+					}
+
 					var employeeEntity = await session.QueryOver<EmployeeEntity>()
 						.Where(e => e.EmployeeEmail == EmployeeEmail)
 						.SingleOrDefaultAsync();
 
-					if (employeeEntity != null)
-					{
-						employeeEntity.Password = Password; // Update the password
-						session.Update(employeeEntity);
-						await session.FlushAsync(); // Flush the changes to the database
+					employeeEntity.Password = _passwordHasher.HashPassword(null, Password); // Update the password
+					session.Update(employeeEntity);
+					await session.FlushAsync(); // Flush the changes to the database
 
-						return Json(new { success = true, message = "Password updated successfully." });
-					}
-					else
-					{
-						return Json(new { success = false, message = "Employee not found." });
-					}
+					return Json(new { success = true, message = "Password updated successfully." });
 				}
 				catch (Exception ex)
 				{
@@ -286,6 +282,14 @@ namespace FirstWebApp.Controllers
             // Ensure that both passwords are provided and match
             if (!string.IsNullOrWhiteSpace(employee.Password) && employee.Password == employee.ConfirmPassword)
             {
+                return Json(new { success = false, message = "Passwords are empty." });
+            }
+            else if(employee.Password == employee.ConfirmPassword)
+            {
+                return Json(new { success = false, message = "Passwords do not match." });
+            }
+            else
+            {
                 try
                 {
                     var employeeIdClaim = User.FindFirst("EmployeeId")?.Value;
@@ -302,7 +306,7 @@ namespace FirstWebApp.Controllers
                             if (employeeEntity != null)
                             {
                                 // Update the password
-                                employeeEntity.Password = employee.Password; // Make sure to hash the password before saving
+                                employeeEntity.Password = _passwordHasher.HashPassword(null, employee.Password); // Make sure to hash the password before saving
                                 await session.UpdateAsync(employeeEntity);
                                 await transaction.CommitAsync();
 
@@ -317,11 +321,7 @@ namespace FirstWebApp.Controllers
                     return Json(new { success = false, message = "Error updating password." + ex.Message });
                 }
             }
-            else
-            {
-                return Json(new { success = false, message = "Passwords do not match or are empty." });
-
-            }
+           
 
             return Json(new { success = false, message = "An error occurred."});
         }

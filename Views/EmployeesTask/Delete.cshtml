@@ -8,8 +8,6 @@
 <script>
     $(document).ready(function () {
 
-
-
         // On clicking the login button
         $('#btnDelete').click(function (e) {
             e.preventDefault(); // Prevent default form submission
@@ -24,73 +22,52 @@
               
             };
 
-            console.log({ data });
-
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Delete", "EmployeesTask")',
-                data: data,
-                headers: {
-                    'RequestVerificationToken': token // Add the token in headers
-                }
-            })
-                .done((data) => {
-                    if (data.success) {
-						window.location.href = data.redirectUrl; // Redirect to a new page on success
-					} else {
-						$('.modal-body').text(data.message)
-
-						$('#exampleModal').modal('show');
-						console.error(data);
-					}
-                })
-                .fail((err) => {
-                    $('.modal-body').text(data.errors.errorMessage);
-
-                    $('#exampleModal').modal('show');
-                    console.error(err);
-                })
-                .always(() => {
-                    console.log('always called');
-                });
+           // Use the helper function for the AJAX request
+            const url = '@Url.Action("Delete", "EmployeesTask")';
+            ajaxRedirection(url, data, token);
         });
     });
 </script>
 
 
-
-<dl class="row">
-        <dt class = "col-sm-2">
+<div class="container">
+    <dl class="row">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.tasks.TaskTitle)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.tasks.TaskTitle)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.employee.EmployeeName)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.employee.EmployeeName)
         </dd>
-     
-        <dt class = "col-sm-2">
+
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.tasks.TaskPriority)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.tasks.TaskPriority)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AssignDate)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.AssignDate)
         </dd>
-       
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.DueDate)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DueDate)
+        </dd>
+
     </dl>
 
-    <form asp-action="Delete" asp-controller="employeesTask">
+    <form>
         <input type="hidden" asp-for="EmployeeTaskId" />
-        <input type="button" value="Delete" class="btn btn-danger" id="btnDelete" /> 
+        <input type="button" value="Delete" class="btn btn-danger" id="btnDelete" />
     </form>
 </div>

@@ -1,0 +1,83 @@
+﻿@model DemoWeb.Models.PagedTaskViewModel
+
+<div id="employeeList" class="container">
+    <div class="row mb-3 justify-content-center">
+        <div class="col-2">
+            <h5>Name</h5>
+        </div>
+        <div class="col-3">
+            <h5>Email</h5>
+        </div>
+        <div class="col-2">
+            <h5>Position</h5>
+        </div>
+        <div class="col-2">
+            <h5>Address</h5>
+        </div>
+        <div class="col-2">
+            <h5>Joined Date</h5>
+        </div>
+        <div class="col-2">
+            <h5>Is Active</h5>
+        </div>
+        <div class="col-1 text-center">
+            <h5>Action</h5>
+        </div>
+    </div>
+
+    @foreach (var employee in Model.Employees)
+    {
+        <div class="row align-items-center py-3 my-2 border rounded justify-content-center">
+            <div class="col-2">
+                <span>@employee.EmployeeName</span>
+            </div>
+            <div class="col-3">
+                <span>@employee.EmployeeEmail</span>
+            </div>
+            <div class="col-3">
+                <span>@employee.EmployeePosition</span>
+            </div>
+            <div class="col-3">
+                <span>@employee.EmployeeAddress</span>
+            </div>
+            <div class="col-2">
+                <span>@employee.DateJoined.ToString("yyyy-MM-dd")</span>
+            </div>
+           
+            <div class="col-2">
+                @if (!employee.isActive)
+                {
+                    <span class="badge bg-warning text-dark">Deactive</span>
+                }
+                else 
+                {
+                    <span class="badge bg-primary">Active</span>
+                }
+            </div>
+            <div class="col-1 text-center">
+               
+                <a asp-action="Edit" asp-route-id="@employee.EmployeeId" class="text-primary me-2">
+                    <i class="fa-solid fa-pencil"></i>
+                </a>
+                <a asp-action="Details" asp-route-id="@employee.EmployeeId" class="text-primary me-2">Details</a>
+
+                @if (employee.isActive)
+                {
+                    <a asp-action="Deactivate" asp-route-id="@employee.EmployeeId" class="text-primary me-2">Deactivate</a>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Pagination controls -->
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="#" onclick="loadTaskPage(@i); return false;">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
