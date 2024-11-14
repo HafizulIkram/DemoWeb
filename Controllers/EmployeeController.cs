@@ -26,30 +26,13 @@ namespace DemoWeb.Controllers
 
         // Specific HR Function
         [Authorize(Roles = "HR")]
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index()
         {
 
-            using (var session = _nhibernateHelper.OpenSession())
-            {
-                // Implement Entity for query
-                var employeeEntity = await session.QueryOver<EmployeeEntity>().ListAsync();
+           
 
-
-                // convert entity into model to pass into views
-                var employee = employeeEntity.Select(entity => new Employee
-                {
-                    EmployeeId = entity.EmployeeId,
-                    EmployeeName = entity.EmployeeName,
-                    EmployeeAddress = entity.EmployeeAddress,
-                    EmployeeEmail = entity.EmployeeEmail,
-                    EmployeePosition = entity.EmployeePosition,
-                    isActive = entity.isActive,
-                    Password = entity.Password.ToString(),
-                    DateJoined = entity.DateJoined,
-                });
-
-                return View(employee);
-            }
+                return View();
+            
         }
 
         [Authorize(Roles = "HR")] // Ensure only authenticated users can access this action
@@ -331,12 +314,53 @@ namespace DemoWeb.Controllers
             }
         }
 
+
+        [HttpPost]
+        [Authorize(Roles = "HR")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activated(int? EmployeeId)
+        {
+            if (EmployeeId == null)
+            {
+                return Json(new { success = false, message = "Invalid employee ID." });
+            }
+
+            try
+            {
+                using (var session = _nhibernateHelper.OpenSession())
+                {
+                    var employee = await session.QueryOver<EmployeeEntity>()
+                                                .Where(e => e.EmployeeId == EmployeeId)
+                                                .SingleOrDefaultAsync();
+
+                    if (employee == null)
+                    {
+                        return Json(new { success = false, message = "Employee not found." });
+                    }
+
+                    using (var transaction = session.BeginTransaction())
+                    {
+                        employee.isActive = true;
+                        session.Update(employee);
+                        await transaction.CommitAsync();
+                    }
+
+                    return Json(new { success = true, message = "Employee activate successfully." });
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (optional)
+                return Json(new { success = false, message = "An error occurred while deactivating the employee.", error = ex.Message });
+            }
+        }
+
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
-                var employeeEntity = await session.QueryOver<EmployeeEntity>().ListAsync();
+                var employeeEntity = await session.QueryOver<EmployeeEntity>().OrderBy(e => e.isActive).Desc.ListAsync();
                 var totalTasks = employeeEntity.Count;
                 var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
 

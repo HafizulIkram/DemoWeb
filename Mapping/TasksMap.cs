@@ -7,12 +7,12 @@ namespace DemoWeb.Mapping
 
         public TasksMap()
         {
-            Table("Tasks"); // The name of the table in the database
+            Table("Tasks"); 
             DynamicInsert();
 
             DynamicUpdate();
 
-            Id(x => x.TaskId).GeneratedBy.Identity(); // Primary key with auto-increment
+            Id(x => x.TaskId).GeneratedBy.Identity(); 
             Map(x => x.TaskTitle).Not.Nullable(); 
             Map(x => x.TaskDescription).Not.Nullable(); 
        

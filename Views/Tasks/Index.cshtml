@@ -6,21 +6,60 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-    // Function to load a specific page of tasks
+    // Function to load a specific page of tasks with an optional search term
     function loadTaskPage(page) {
-        $.get('@Url.Action("GetTaskList", "Tasks")', { page: page }, function (data) {
-            $('#taskListContainer').html(data);
-        });
+        $.ajax({
+            url: '@Url.Action("GetTaskList", "Tasks")',
+            method: 'GET',
+            data: { page: page}, // Include search term if provided
+            dataType: 'html', // Assuming the server returns HTML
+            
+        })
+            .done(function (data) {
+                // This function runs if the request is successful
+                $('#taskListContainer').html(data); // Update the task list container with results
+            });
+
+    
     }
 
-    // Load the first page on initial load
+    // Filter tasks by TaskTitle or show all if the search term is empty
+    function filterTasks(searchTerm) {
+        loadTaskPage(1, searchTerm); // Load the first page with the filtered search term
+    }
+
+    // On page load, display all tasks by default
     $(document).ready(function () {
-        loadTaskPage(1); // Loads the first page initially
+        loadTaskPage(1); // Load all tasks initially
+
+        // Filter tasks based on input
+        $('#taskSearch').on('keyup', function () {
+            var searchText = $(this).val().toLowerCase();
+
+            $('#taskListContainer .task-item').each(function () {
+                var taskTitle = $(this).find('.task-title').text().toLowerCase();
+                console.log(taskTitle);
+
+                if (taskTitle.includes(searchText)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
     });
 </script>
 
+
+
 <div class="container mt-4">
     <h2>Task List</h2>
+
+    <!-- Search input for filtering tasks -->
+    <div class="mb-3">
+        <input type="text" id="taskSearch" class="form-control" placeholder="Search tasks by title">
+    </div>
+
     <div id="taskListContainer">
         <!-- Task list content will be loaded here via AJAX -->
     </div>

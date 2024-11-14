@@ -10,15 +10,14 @@ public class EmployeeMap : ClassMap<EmployeeEntity>
 
         DynamicUpdate();
 
-        Id(x => x.EmployeeId).GeneratedBy.Identity(); // Primary key with auto-increment
-		Map(x => x.EmployeeName); // 'Name' column
-		Map(x => x.EmployeeAddress); // 'Role' column
-		Map(x => x.EmployeePosition); // 'HireDate' column
-		Map(x => x.DateJoined); // 'HireDate' column
-		Map(x => x.isActive); // 'HireDate' column
-		Map(x => x.Password); // 'HireDate' column
-		Map(x => x.EmployeeEmail); // 'HireDate' column
-
+        Id(x => x.EmployeeId).GeneratedBy.Identity(); 
+		Map(x => x.EmployeeName); 
+		Map(x => x.EmployeeAddress); 
+		Map(x => x.EmployeePosition);
+		Map(x => x.DateJoined); 
+		Map(x => x.isActive); 
+		Map(x => x.Password); 
+		Map(x => x.EmployeeEmail); 
         HasMany(x => x.EmployeeTasks)  
             .Cascade.All()
             .Inverse()

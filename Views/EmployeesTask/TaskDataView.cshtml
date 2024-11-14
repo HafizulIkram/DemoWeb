@@ -1,0 +1,31 @@
+﻿@model DemoWeb.Models.TaskViewModel
+
+<h2>Task Status Data</h2>
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Finished Tasks</h5>
+                <p class="display-4 text-success">@Model.finishTaskCount</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Pending Tasks</h5>
+                <p class="display-4 text-warning">@Model.pendingTaskCount</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Unfinished Tasks</h5>
+                <p class="display-4 text-danger">@Model.incompleteTaskCount</p>
+            </div>
+        </div>
+    </div>
+</div>

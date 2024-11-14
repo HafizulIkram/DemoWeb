@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DemoWeb.Models
 {
@@ -20,13 +21,22 @@ namespace DemoWeb.Models
         [Display(Name = "Assign Date")]
         public DateTime AssignDate { get; set; }
 
+        
         [Required]
+        [Display(Name = "Status")]
         public string TaskStatus { get; set; }
 
         [Required]
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
         public DateTime DueDate { get; set; }
+
+        [AllowNull]
+        [DataType(DataType.Date)]
+        [Display(Name = "Finished Date")]
+        public DateTime FinishedDate { get; set; }
+
+
 
 
         // Properties for the dropdown lists

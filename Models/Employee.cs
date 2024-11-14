@@ -12,16 +12,20 @@ namespace DemoWeb.Models
 		public virtual int EmployeeId { get; set; }
 
 		[Required]
+        [Display(Name = "Employee Name")]
 		public string EmployeeName { get; set; }
 
         [Required]
+        [Display(Name = "Address")]
         public string EmployeeAddress { get; set; }
 
         [Required]
-		public  string EmployeePosition { get; set; }
+        [Display(Name = "Position")]
+        public string EmployeePosition { get; set; }
 
+        [Display(Name = "Email")]
 		[DataType(DataType.EmailAddress)]
-		public string EmployeeEmail { get; set; }
+        public string EmployeeEmail { get; set; }
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
@@ -29,6 +33,7 @@ namespace DemoWeb.Models
         public  string Password { get; set; }
 
         [Required]
+        [Display(Name = "Confirm Password")]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
         [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
         public string ConfirmPassword { get; set; }
@@ -38,8 +43,9 @@ namespace DemoWeb.Models
         public  bool isActive { get; set; }
 
 		[Required]
+        [Display(Name = "Date Joined")]
 		[DataType(DataType.Date)]
-		public  DateTime DateJoined { get; set; }
+        public  DateTime DateJoined { get; set; }
 
         [AllowNull]
         public  List<SelectListItem> PositionList { get; set; }

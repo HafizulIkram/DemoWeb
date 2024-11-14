@@ -1,58 +1,50 @@
 ﻿@model DemoWeb.Models.PagedTaskViewModel
 
 <div id="taskList" class="container">
-    <div class="row mb-3 justify-content-center">
-        <div class="col-2">
-            <h5>Title</h5>
-        </div>
-        <div class="col-3">
-            <h5>Description</h5>
-        </div>
-        <div class="col-2">
-            <h5>Priority</h5>
-        </div>
-        <div class="col-2">
-            <h5>Created At</h5>
-        </div>
-       
-        <div class="col-1 text-center">
-            <h5>Action</h5>
-        </div>
+    @Html.AntiForgeryToken()
+
+    <div class="row mb-3 justify-content-center d-none d-md-flex">
+        <!-- Table Headers -->
+        <div class="col-2"><h5>Title</h5></div>
+        <div class="col-2"><h5>Description</h5></div>
+        <div class="col-1"><h5>Priority</h5></div>
+        <div class="col-2"><h5>Created At</h5></div>
+        <div class="col-2"><h5>Action</h5></div>
     </div>
 
-    @foreach (var task in Model.Tasks)
-    {
-        <div class="row align-items-center py-3 my-2 border rounded justify-content-center">
-            <div class="col-2">
-                <span>@task.TaskTitle</span>
+    <!-- Task List -->
+    <div id="taskListContainer">
+        @foreach (var task in Model.Tasks)
+        {
+            <div class="row align-items-center py-3 my-2 border rounded justify-content-center task-item">
+                <div class="col-10 col-md-2 task-title">
+                    <span class="d-md-none font-weight-bold">Title: </span>@task.TaskTitle
+                </div>
+                <div class="col-10 col-md-2">
+                    <span class="d-md-none font-weight-bold">Description: </span>@task.TaskDescription
+                </div>
+                <div class="col-10 col-md-2">
+                    <span class="d-md-none font-weight-bold">Priority: </span>
+                    @if (task.TaskPriority == "Urgent")
+                    {
+                        <span class="badge bg-danger">Urgent</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary">Normal</span>
+                    }
+                </div>
+                <div class="col-10 col-md-2">
+                    <span class="d-md-none font-weight-bold">Created At: </span>@task.CreatedAt.ToString("yyyy-MM-dd")
+                </div>
+                <div class="col-10 col-md-1 text-center">
+                    <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })" class="text-primary me-2">
+                        <i class="fa-solid fa-pencil"></i>
+                    </a>
+                </div>
             </div>
-            <div class="col-3">
-                <span>@task.TaskDescription</span>
-            </div>
-            <div class="col-2">
-                @if (task.TaskPriority == "Urgent")
-                {
-                    <span class="badge bg-warning text-dark">Urgent</span>
-                }
-                else if (task.TaskPriority == "Normal")
-                {
-                    <span class="badge bg-primary">Normal</span>
-                }
-            </div>
-            <div class="col-2">
-                <span>@task.CreatedAt.ToString("yyyy-MM-dd")</span>
-            </div>
-           
-            <div class="col-1 text-center">
-                <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })" class="text-primary me-2">
-                    <i class="fa-solid fa-pencil"></i>
-                </a>
-              @*   <a href="@Url.Action("Delete", "Tasks", new { id = task.TaskId })" class="text-danger">
-                    <i class="fa-solid fa-trash"></i>
-                </a> *@
-            </div>
-        </div>
-    }
+        }
+    </div>
 
     <!-- Pagination controls -->
     <nav class="mt-4">
@@ -66,3 +58,5 @@
         </ul>
     </nav>
 </div>
+
+

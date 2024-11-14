@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NHibernate.Transform;
 using Microsoft.AspNetCore.Authorization;
+using static DemoWeb.Models.EmployeeTask;
 
 
 namespace DemoWeb.Controllers
@@ -44,6 +45,7 @@ namespace DemoWeb.Controllers
                     .Where(() => employeeAlias.EmployeeId == employeeId)
                     .ListAsync<EmployeeTaskEntity>();
 
+
                 // Convert entities to models
                 var employeeTasks = employeeTaskEntities.Select(entity => new EmployeeTask
                 {
@@ -53,6 +55,7 @@ namespace DemoWeb.Controllers
                     TaskStatus = entity.TaskStatus,
                     AssignDate = entity.AssignDate,
                     DueDate = entity.DueDate,
+
 
                     tasks = new EmployeeTask.Tasks
                     {
@@ -69,6 +72,64 @@ namespace DemoWeb.Controllers
 
                 return View(employeeTasks);
             }
+        }
+
+        [Authorize]
+        public async Task<IActionResult> GetTaskData()
+        {
+
+            try
+            {
+                using (var session = _nhibernateHelper.OpenSession())
+                {
+                    EmployeeTaskEntity employeeTaskAlias = null;
+                    EmployeeEntity employeeAlias = null;
+                    TaskEntity taskAlias = null;
+
+                    // Get the currently logged-in user's EmployeeId from claims
+                    var employeeIdClaim = User.FindFirst("EmployeeId");
+
+
+                    int employeeId = int.Parse(employeeIdClaim.Value);
+
+                    // Query to fetch EmployeeTask entities and join with Employee and Task
+                    // Count the number of finished tasks for a specific employee
+                    var finishTask = await session.QueryOver(() => employeeTaskAlias)
+                                   .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                   .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                   .And(() => employeeTaskAlias.TaskStatus == "Finish") // Filter by TaskStatus "Finished"
+                                   .RowCountAsync();
+
+                    var pendingTask = await session.QueryOver(() => employeeTaskAlias)
+                                  .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                  .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                  .And(() => employeeTaskAlias.TaskStatus == "Pending") // Filter by TaskStatus "Finished"
+                                  .RowCountAsync();
+
+                    var incompleteTask = await session.QueryOver(() => employeeTaskAlias)
+                                  .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
+                                  .Where(() => employeeAlias.EmployeeId == employeeId) // Filter by employeeId
+                                  .And(() => employeeTaskAlias.TaskStatus == "Incomplete") // Filter by TaskStatus "Finished"
+                                  .RowCountAsync();
+
+
+                    // Convert entities to models
+                    var TaskData = new TaskViewModel
+                    {
+                        finishTaskCount = finishTask,
+                        pendingTaskCount = pendingTask,
+                        incompleteTaskCount = incompleteTask,
+                    };
+
+                    return PartialView("TaskDataView", TaskData);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return Json(new { success = false, message = "An error occurred.", error = ex.Message });
+            }
+
         }
 
         #region Assign New Task
@@ -96,7 +157,7 @@ namespace DemoWeb.Controllers
                     TaskDescription = t.TaskDescription
                 }).ToList();
 
-               
+
 
                 var employeeTaskModel = new EmployeeTask
                 {
@@ -134,9 +195,15 @@ namespace DemoWeb.Controllers
                     using (var transaction = session.BeginTransaction())
                     {
                         var employee = session.Get<EmployeeEntity>(employeeTaskModel.EmployeeId);
+
                         if (employee == null)
                         {
                             return Json(new { success = false, message = "Employee not found." });
+                        }
+
+                        if (employeeTaskModel.DueDate < DateTime.Today)
+                        {
+                            return Json(new { success = false, message = "Due Date cannot be lower than today" });
                         }
 
                         // Create a new EmployeeTaskEntity for each task in the TaskListId
@@ -145,14 +212,40 @@ namespace DemoWeb.Controllers
                             var task = session.Get<TaskEntity>(taskId);
                             if (task != null)
                             {
+
+                                // Query to count tasks with the same due date for the employee
+                                int existingTaskCount = session.Query<EmployeeTaskEntity>()
+                                                               .Where(x => x.Employee == employee
+                                                                           && x.DueDate == employeeTaskModel.DueDate)
+                                                               .Count();
+
+                                int NotAcceptTask = session.Query<EmployeeTaskEntity>()
+                                                               .Where(x => x.Employee == employee
+                                                                           && x.TaskStatus == "Incomplete")
+                                                               .Count();
+
+                                // Check if there are already 2 or more tasks with the same due date
+                                if (existingTaskCount >= 2)
+                                {
+                                    return Json(new { success = false, message = "Error: Maximum of 2 tasks can be assigned on the same due date." });
+                                }
+
+                                if (NotAcceptTask >= 3)
+                                {
+                                    return Json(new { success = false, message = "Maximum task had been reached" });
+                                }
+
                                 var employeeTaskEntity = new EmployeeTaskEntity
                                 {
                                     Employee = employee,
                                     Task = task,
-                                    AssignDate = employeeTaskModel.AssignDate,
+                                    AssignDate = DateTime.Today,
                                     DueDate = employeeTaskModel.DueDate,
+                                    FinishedDate = null,
                                     TaskStatus = "Incomplete"
                                 };
+
+
 
                                 await session.SaveAsync(employeeTaskEntity); // Save each employee-task assignment
                             }
@@ -169,8 +262,7 @@ namespace DemoWeb.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception if necessary (implement logging according to your framework)
-                // Example: _logger.LogError(ex, "Error occurred while creating employee tasks: {Message}", ex.Message);
+
 
                 return Json(new { success = false, message = "An error occurred while assigning tasks.", error = ex.Message });
             }
@@ -185,6 +277,12 @@ namespace DemoWeb.Controllers
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
+                int employeeId = int.TryParse(User.FindFirst("EmployeeId")?.Value, out var parsedEmployeeId) ? parsedEmployeeId : 0;
+                // Define aliases for your entities
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
+
                 var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
                 var totalTasks = tasksEntity.Count;
                 var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
@@ -199,12 +297,13 @@ namespace DemoWeb.Controllers
                         TaskDescription = t.TaskDescription
                     })
                     .ToList();
-
+                
                 var model = new PagedTaskViewModel
                 {
                     EmployeeTasks = tasksList,
                     CurrentPage = page,
-                    TotalPages = totalPages
+                    TotalPages = totalPages,
+
                 };
 
                 return PartialView("_TaskListPartialView", model);
@@ -314,7 +413,7 @@ namespace DemoWeb.Controllers
             }
             catch (Exception ex)
             {
-               
+
                 return Json(new { success = false, message = "An error occurred while deleting the task.", error = ex.Message });
             }
         }
@@ -322,7 +421,8 @@ namespace DemoWeb.Controllers
 
 
         // Update: Changing Task Status
-        public async Task<IActionResult> AcceptTask(int employeeTaskId)
+        [HttpPost]
+        public async Task<IActionResult> AcceptTask(int EmployeeTaskId)
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
@@ -337,7 +437,7 @@ namespace DemoWeb.Controllers
                     var employeeTask = await session.QueryOver(() => employeeTaskAlias)
                         .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
                         .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
-                        .Where(() => employeeTaskAlias.EmployeeTaskId == employeeTaskId)  // Filter by EmployeeTaskId
+                        .Where(() => employeeTaskAlias.EmployeeTaskId == EmployeeTaskId)  // Filter by EmployeeTaskId
                         .SelectList(list => list
                             .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
                             .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
@@ -354,6 +454,7 @@ namespace DemoWeb.Controllers
                     }
 
                     employeeTask.TaskStatus = "Pending";
+                    employeeTask.FinishedDate = null;
 
                     // Save changes to the database
                     using (var transaction = session.BeginTransaction())
@@ -363,11 +464,11 @@ namespace DemoWeb.Controllers
                     }
 
                     // Return JSON response for success
-                    return Json(new { success = true, message = "Task status updated to 'Pending'." });
+                    return Json(new { success = true, message = "Task successfully accepted.", redirectUrl = Url.Action("Index", "EmployeesTask") });
                 }
                 catch (Exception ex)
                 {
-                    
+
                     return Json(new { success = false, message = "An error occurred while updating the task status: " + ex.Message });
                 }
             }
@@ -375,6 +476,7 @@ namespace DemoWeb.Controllers
 
 
         // Update: Changing Task Status
+        [HttpPost]
         public async Task<IActionResult> FinishTask(int employeeTaskId)
         {
             using (var session = _nhibernateHelper.OpenSession())
@@ -407,6 +509,9 @@ namespace DemoWeb.Controllers
                     }
 
                     employeeTask.TaskStatus = "Finish";
+                    employeeTask.FinishedDate = DateTime.Today;
+
+
 
                     // Save changes to the database
                     using (var transaction = session.BeginTransaction())
@@ -415,12 +520,11 @@ namespace DemoWeb.Controllers
                         await transaction.CommitAsync();
                     }
 
-                    // Return JSON response for success
-                    return Json(new { success = true, message = "Task status updated to 'Finish'." });
+                    return Json(new { success = true, message = "Task finished.", redirectUrl = Url.Action("Index", "EmployeesTask") });
+
                 }
                 catch (Exception ex)
                 {
-                   
                     return Json(new { success = false, message = "An error occurred while updating the task status: " + ex.Message });
                 }
             }
@@ -448,6 +552,7 @@ namespace DemoWeb.Controllers
                             .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
                             .Select(() => employeeTaskAlias.TaskStatus).WithAlias(() => employeeTaskAlias.TaskStatus)          // Select TaskStatus
                             .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
+                            .Select(() => employeeTaskAlias.FinishedDate).WithAlias(() => employeeTaskAlias.FinishedDate)          // Select AssignDate
                             .Select(() => employeeTaskAlias.DueDate).WithAlias(() => employeeTaskAlias.DueDate)          // Select AssignDate
                             .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)              // Select Employee
                             .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)                      // Select Task
@@ -462,20 +567,22 @@ namespace DemoWeb.Controllers
 
                     // Convert entities to models
                     var employeeTasks = new EmployeeTask
-					{
+                    {
                         EmployeeTaskId = employeeTaskEntities.EmployeeTaskId,
                         EmployeeId = employeeTaskEntities.Employee.EmployeeId,
                         TaskId = employeeTaskEntities.Task.TaskId,
                         TaskStatus = employeeTaskEntities.TaskStatus,
                         AssignDate = employeeTaskEntities.AssignDate,
                         DueDate = employeeTaskEntities.DueDate,
+                        FinishedDate = employeeTaskEntities.FinishedDate ?? DateTime.MinValue,
 
-						tasks = new EmployeeTask.Tasks
-						{
+
+                        tasks = new EmployeeTask.Tasks
+                        {
                             TaskTitle = employeeTaskEntities.Task.TaskTitle,
                             TaskPriority = employeeTaskEntities.Task.TaskPriority,
                             TaskDescription = employeeTaskEntities.Task.TaskDescription,
-                            
+
                         },
 
                         employee = new EmployeeTask.Employee
@@ -488,11 +595,12 @@ namespace DemoWeb.Controllers
                 }
                 catch (Exception ex)
                 {
-                    
+
                     return Json(new { success = false, message = "An error occurred while fetching task details: " + ex.Message });
                 }
             }
         }
+
 
     }
 }

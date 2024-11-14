@@ -69,15 +69,27 @@
                                 <span>Employee</span>
                             </a>
                             <ul id="employeeSubmenu" class="collapse list-unstyled ms-3">
-                                <li><a class="nav-link" asp-controller="Employee" asp-action="Index">Employee List</a></li>
-                                <li><a class="nav-link" asp-controller="Employee" asp-action="Create">Add New Employee</a></li>
+                                <li>
+                                    <a class="nav-link" asp-controller="Employee" asp-action="Index">
+                                        <span>Employee List</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-controller="Employee" asp-action="Create">
+                                        <span>Add New Employee</span>
+                                    </a>
+                                </li>
                             </ul>
                             <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#assignTaskSubmenu" aria-expanded="false">
                                 <i class="lni lni-briefcase-2"></i>
                                 <span>Employee Task</span>
                             </a>
                             <ul id="assignTaskSubmenu" class="collapse list-unstyled ms-3">
-                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">Assign Task List</a></li>
+                                <li>
+                                    <a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">
+                                        <span>Assigned Task List</span>
+                                    </a>
+                                </li>
                                
                             </ul>
                         </li>
@@ -91,16 +103,30 @@
                                 <span>Task</span>
                             </a>
                             <ul id="taskSubmenu" class="collapse list-unstyled ms-3">
-                                <li><a class="nav-link" asp-controller="Tasks" asp-action="Index">List</a></li>
-                                <li><a class="nav-link" asp-controller="Tasks" asp-action="Create">Add New Task</a></li>
+                                <li>
+                                    <a class="nav-link" asp-controller="Tasks" asp-action="Index">
+                                        <span>Task List</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="nav-link" asp-controller="Tasks" asp-action="Create">
+                                        <span>Add New Task</span>
+                                    </a>
+                                </li>
                             </ul>
                             <a class="nav-link collapsed" data-bs-toggle="collapse" data-bs-target="#assignTaskSubmenu" aria-expanded="false">
                                 <i class="lni lni-briefcase-2"></i>
                                 <span>Employee Task</span>
                             </a>
                             <ul id="assignTaskSubmenu" class="collapse list-unstyled ms-3">
-                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">Assign Task List</a></li>
-                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Create">Assign Emplpoyee Task</a></li>
+                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">
+                                     <span>Assigned Task List</span>
+                                     </a>
+                                </li>
+                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Create">
+                                        <span>Assign New Task</span>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     }
@@ -112,8 +138,12 @@
                                 <i class="lni lni-briefcase-2"></i>
                                 <span>Employee Task</span>
                             </a>
-                            <ul id="assignTaskSubmenu" class="collapse list-unstyled ms-3">
-                                <li><a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">Assign Task List</a></li>
+                            <ul id="assignTaskSubmenu" class=" collapse list-unstyled ms-3">
+                                <li>
+                                    <a class="nav-link" asp-controller="EmployeesTask" asp-action="Index">
+                                        <span>Assigned Task List</span>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     }
@@ -124,6 +154,7 @@
             <!-- Main Content -->
             <div id="main-content" class="main-content">
                 @RenderBody()
+                @await Html.PartialAsync("_ModalDisplay")
             </div>
         </div>
     </div>

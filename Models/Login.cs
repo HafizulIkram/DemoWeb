@@ -7,6 +7,8 @@ namespace DemoWeb.Models
 
 
         [Required]
+        [Display(Name = "Email")]
+        [DataType(DataType.EmailAddress)]
         public string EmployeeEmail { get; set; }
 
         [Required]

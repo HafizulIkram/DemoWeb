@@ -84,12 +84,12 @@ namespace FirstWebApp.Controllers
 
 								// Create claims for the logged-in user
 								var claims = new List<Claim>
-							{
-								new Claim(ClaimTypes.Name, employeeEntity.EmployeeName),
-								new Claim(ClaimTypes.Email, employeeEntity.EmployeeEmail),
-								new Claim("EmployeeId", employeeEntity.EmployeeId.ToString()),
-								new Claim(ClaimTypes.Role, employeeEntity.EmployeePosition) // Add role claims as necessary
-							};
+							    {
+								    new Claim(ClaimTypes.Name, employeeEntity.EmployeeName),
+								    new Claim(ClaimTypes.Email, employeeEntity.EmployeeEmail),
+								    new Claim("EmployeeId", employeeEntity.EmployeeId.ToString()),
+								    new Claim(ClaimTypes.Role, employeeEntity.EmployeePosition) // Add role claims as necessary
+							    };
 
 								// Create the identity and sign in the user
 								var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -135,9 +135,15 @@ namespace FirstWebApp.Controllers
 
                     if (employeeEntity != null)
                     {
+                        if (!employeeEntity.isActive)
+                        {
+                            return Json(new { success = false, message = "Employee had been deactivated" });
+                        }
+
                         // Employee exists, prompt to enter new password
                         return Json(new { success = true, message = "Employee found. Enter new password." });
                     }
+                
                     else
                     {
                         // Employee does not exist

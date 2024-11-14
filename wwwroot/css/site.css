@@ -2,9 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
 
-.container{
-   object-position: center;
-}
+
 
 .search-section {
     margin-bottom: 20px;
@@ -58,6 +56,7 @@ body, html {
     }
 
     .sidebar.collapsed .nav-link span,
+
     .sidebar.collapsed .sidebar-footer span, 
     .sidebar.collapsed .navbar-brand {
         display: none;
@@ -67,13 +66,13 @@ body, html {
 .main-content {
     margin-left: 250px;
     padding: 1rem;
-    transition: margin-left 0.3s;
+   
     height: calc(100vh - 56px); /* Space for fixed footer */
     overflow-y: auto;
 }
 
     .main-content.collapsed {
-        margin-left: 80px;
+        margin-left: 50px;
     }
 
 /* Headers styling */
@@ -121,6 +120,9 @@ body, html {
     color: #dc3545 !important;
 }
 
+.pagination {
+    margin-bottom: 80px;
+}
 /* Pagination styles */
 .pagination .page-item.active .page-link {
     background-color: #007bff;
@@ -185,6 +187,8 @@ footer {
         width: calc(100% - 80px);
     }
 
+form{
+    margin-bottom: 40px;
+}
 
 
-   

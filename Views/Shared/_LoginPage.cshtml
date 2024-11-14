@@ -19,6 +19,7 @@
   
     <div id="main-content" class="main-content">
         @RenderBody()
+        @await Html.PartialAsync("_ModalDisplay")
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

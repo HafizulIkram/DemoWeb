@@ -1,14 +1,16 @@
 ﻿@model DemoWeb.Models.PagedTaskViewModel
 
 <div id="employeeList" class="container">
-    <div class="row mb-3 justify-content-center">
+    @Html.AntiForgeryToken()
+    <div class="row mb-3 justify-content-center d-none d-md-flex">
+        <!-- Table Headers -->
         <div class="col-2">
             <h5>Name</h5>
         </div>
-        <div class="col-3">
+        <div class="col-2">
             <h5>Email</h5>
         </div>
-        <div class="col-2">
+        <div class="col-1">
             <h5>Position</h5>
         </div>
         <div class="col-2">
@@ -18,52 +20,68 @@
             <h5>Joined Date</h5>
         </div>
         <div class="col-2">
-            <h5>Is Active</h5>
+            <h5>Status</h5>
         </div>
         <div class="col-1 text-center">
-            <h5>Action</h5>
+            <h5>Actions</h5>
         </div>
     </div>
 
+    <!-- Employee List -->
     @foreach (var employee in Model.Employees)
     {
-        <div class="row align-items-center py-3 my-2 border rounded justify-content-center">
-            <div class="col-2">
-                <span>@employee.EmployeeName</span>
+        <div class="row align-items-center py-3 my-2 border rounded justify-content-center employee-item">
+            <!-- Employee Data for Desktop & Tablet -->
+            <div class="col-10 col-md-2 employee-name">
+                <span class="d-md-none font-weight-bold">Name: </span>@employee.EmployeeName
             </div>
-            <div class="col-3">
-                <span>@employee.EmployeeEmail</span>
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Email: </span>@employee.EmployeeEmail
             </div>
-            <div class="col-3">
-                <span>@employee.EmployeePosition</span>
+            <div class="col-10 col-md-1">
+                <span class="d-md-none font-weight-bold">Position: </span>@employee.EmployeePosition
             </div>
-            <div class="col-3">
-                <span>@employee.EmployeeAddress</span>
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Address: </span>@employee.EmployeeAddress
             </div>
-            <div class="col-2">
-                <span>@employee.DateJoined.ToString("yyyy-MM-dd")</span>
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Joined Date: </span>@employee.DateJoined.ToString("yyyy-MM-dd")
             </div>
-           
-            <div class="col-2">
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Status: </span>
                 @if (!employee.isActive)
                 {
                     <span class="badge bg-warning text-dark">Deactive</span>
                 }
-                else 
+                else
                 {
                     <span class="badge bg-primary">Active</span>
                 }
             </div>
-            <div class="col-1 text-center">
-               
-                <a asp-action="Edit" asp-route-id="@employee.EmployeeId" class="text-primary me-2">
-                    <i class="fa-solid fa-pencil"></i>
-                </a>
-                <a asp-action="Details" asp-route-id="@employee.EmployeeId" class="text-primary me-2">Details</a>
-
+            <div class="col-10 col-md-1 text-center">
                 @if (employee.isActive)
                 {
-                    <a asp-action="Deactivate" asp-route-id="@employee.EmployeeId" class="text-primary me-2">Deactivate</a>
+                    <a asp-action="Edit" asp-route-id="@employee.EmployeeId" class="text-primary me-2">
+                        <i class="fa-solid fa-pencil"></i>
+                    </a>
+                }
+              
+                <a asp-action="Details" asp-route-id="@employee.EmployeeId" class="text-primary me-2">
+                    <i class="fa-solid fa-circle-info"></i>
+                </a>
+
+                @if (employee.isActive && User.FindFirst("EmployeeId")?.Value != employee.EmployeeId.ToString())
+                {
+                    <button type="button" id="btnDeactivate" class="text-primary me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
+                        <i class="fa-solid fa-ban"></i>
+                    </button>
+
+                }
+                else
+                {
+                    <button type="button" id="btnActivate" class="text-primary me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </button>
                 }
             </div>
         </div>
@@ -81,3 +99,5 @@
         </ul>
     </nav>
 </div>
+
+

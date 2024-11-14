@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
    
     <link rel="stylesheet" href="~/css/Homepage.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/DemoWeb.styles.css" asp-append-version="true" />
+
 </head>
 <body>
     <header>
@@ -92,6 +92,7 @@
         <!-- Use container-fluid and flexbox for full width and height -->
         <main role="main" class="pb-3 flex-grow-1">
             @RenderBody()
+            @await Html.PartialAsync("_ModalDisplay")
         </main>
     </div>
 

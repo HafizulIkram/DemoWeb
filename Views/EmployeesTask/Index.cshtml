@@ -4,12 +4,74 @@
     ViewData["Title"] = "Assgined Task List";
 }
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $('.btnAccept').click(function (e) {
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeTaskId: $(this).val(),
+            
+            };
+
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("AcceptTask", "EmployeesTask")';
+            sendAjaxRequest(url, data, token);
+        });
+
+        $('.btnFinished').click(function (e) {
+         
+
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+
+            const data = {
+                _RequestVerificationToken: token,
+                EmployeeTaskId: $(this).val(),
+
+
+            };
+
+
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("FinishTask", "EmployeesTask")';
+            sendAjaxRequest(url, data, token);
+        });
+
+
+
+        $.ajax({
+            url: '@Url.Action("GetTaskData", "EmployeesTask")', // Update with your controller name
+            type: 'GET'
+        })
+            .done((data) => {
+                $('#taskStatusCardsContainer').html(data); // Load partial view content
+                console.log(data);
+            })
+            .fail((data) => {
+                console.error(data);
+            });
+  });
+</script>
+
+
 
 
 <div class="container">
+    @Html.AntiForgeryToken()
     @if (Model != null && Model.Any())
     {
-        @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus))  // Group by Task Title
+
+        <div id="taskStatusCardsContainer"></div>
+        <br />
+        
+
+        @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus) ) // Group by Task Title
         {
             <h2>@taskGroup.Key Task</h2>
 
@@ -22,7 +84,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
                                 <p>
-                                    <strong>Assigned to:</strong> @task.employee.EmployeeName <br /> <!-- Access Employee Name -->
+                                
                                     <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
                                     <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
                                     <strong>Assign Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
@@ -30,24 +92,19 @@
                                 </p>
 
                                 <div class="btn-group">
-                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-info">Details</a>
+                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Details</a>
 
-                                 
 
-                                    <!-- Only show the Accept Task button if the task status is 'Incomplete' -->
                                     @if (task.TaskStatus == "Incomplete")
                                     {
-                                        <a asp-action="AcceptTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Accept Task</a>
+                                        <button id="btnAccept_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnAccept" value="@task.EmployeeTaskId">Accept Task</button>
 
-                                        @if (User.IsInRole("Team Leader"))
-                                        {
-                                            <a asp-action="Delete" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Delete</a>
-                                        }
+                                       
                                     }
 
                                     @if (task.TaskStatus == "Pending")
                                     {
-                                        <a asp-action="FinishTask" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Finish</a>
+                                        <button id="btnFinished_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnFinished" value="@task.EmployeeTaskId">Finish</button>
                                     }
                                 </div>
                             </div>
@@ -55,6 +112,7 @@
                     </div>
                 }
             </div>
+
         }
     }
 
@@ -63,7 +121,4 @@
         <h1>No Task Available</h1>
     }
 
-    
 </div>
-
-

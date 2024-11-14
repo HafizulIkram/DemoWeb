@@ -16,12 +16,177 @@
      // Load the first page on initial load
        $(document).ready(function () {
            loadTaskPage(1); // Loads the first page initially
-          });
+
+			$('#employeeSearch').on('input', function () {
+			var searchText = $(this).val().toLowerCase();
+
+			$('#employeeListContainer .employee-item').each(function () {
+				var taskTitle = $(this).find('.employee-name').text().toLowerCase();
+			
+
+				if (taskTitle.includes(searchText)) {
+					$(this).show();
+				} else {
+					$(this).hide();
+				}
+			});
+		});
+		
+       });
+
+	// Handle the deactivate button click and show modal
+	$(document).on('click', '#btnDeactivate', function (e) {
+		$('#btnConfirm').show();
+
+		$('.modal-body').text("Are you sure to deactivate this employee?");
+		
+		// Show modal when deactivate button is clicked
+		$('#exampleModal').modal('show');
+
+		// Get the EmployeeId from the button's data attribute or hidden input
+		var employeeId = $(this).data('employee-id');
+
+		// Remove any existing event handlers to prevent multiple triggers
+		$('#btnConfirm').on('click', function (e) {
+	
+			// Get anti-forgery token
+			var token = $("input[name='__RequestVerificationToken']").val();
+
+			// Collect form data, including the EmployeeId
+			const data = {
+				_RequestVerificationToken: token,
+				EmployeeId: employeeId,
+			};
+
+			console.log(data);
+
+			// Send AJAX request
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("Deactivate", "Employee")',
+				data: data,
+				headers: {
+					'RequestVerificationToken': token
+				}
+			})
+				.done((data) => {
+					// Display success message in the modal
+					$('.modal-body').text(data.message);
+
+					// Show the modal again with the success message
+					$('#exampleModal').modal('show');
+					console.log({ data });
+
+					$('#btnConfirm').hide();
+
+
+					
+				})
+				.fail((err) => {
+					// Display error message in the modal
+					$('.modal-body').text(err.responseJSON?.message || "An error occurred.");
+
+					$('#btnConfirm').hide();
+					// Show the modal again with the error message
+					$('#exampleModal').modal('show');
+					console.error(err);
+				})
+				.always(() => {
+					console.log('AJAX request complete');
+				});
+		});
+	});
+
+	// Handle the deactivate button click and show modal
+	$(document).on('click', '#btnActivate', function (e) {
+		$('#btnConfirm').show();
+	
+
+		$('.modal-body').text("Are you sure to activate this employee?");
+
+		// Show modal when deactivate button is clicked
+		$('#exampleModal').modal('show');
+
+		// Get the EmployeeId from the button's data attribute or hidden input
+		var employeeId = $(this).data('employee-id');
+
+		// Remove any existing event handlers to prevent multiple triggers
+		$('#btnConfirm').on('click', function (e) {
+
+			// Get anti-forgery token
+			var token = $("input[name='__RequestVerificationToken']").val();
+
+			// Collect form data, including the EmployeeId
+			const data = {
+				_RequestVerificationToken: token,
+				EmployeeId: employeeId,
+			};
+
+			console.log(data);
+
+			// Send AJAX request
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("Activated", "Employee")',
+				data: data,
+				headers: {
+					'RequestVerificationToken': token
+				}
+			})
+				.done((data) => {
+					// Display success message in the modal
+					$('.modal-body').text(data.message);
+
+					// Show the modal again with the success message
+					$('#exampleModal').modal('show');
+					console.log({ data });
+
+					$('#btnConfirm').hide();
+
+
+				})
+				.fail((err) => {
+					// Display error message in the modal
+					$('.modal-body').text(err.responseJSON?.message || "An error occurred.");
+
+					$('#btnConfirm').hide();
+					// Show the modal again with the error message
+					$('#exampleModal').modal('show');
+					console.error(err);
+				})
+				.always(() => {
+					console.log('AJAX request complete');
+				});
+		});
+
+	});
 </script>
 
 <div class="container mt-4">
-    <h2>Task List</h2>
+    <h2>Employee List</h2>
+	<div class="mb-3">
+		<input type="text" id="employeeSearch" class="form-control" placeholder="Search employee by name">
+	</div>
     <div id="employeeListContainer">
-       
+     
     </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="exampleModalLabel">Respond Message</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				....
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" id="btnConfirm">Yes</button>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
 </div>

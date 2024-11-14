@@ -7,17 +7,18 @@ namespace DemoWeb.Mapping
     {
         public EmployeeTaskMap()
         {
-            Table("EmployeeTask"); // The name of the table in the database
+            Table("EmployeeTask"); 
             DynamicInsert();
 
             DynamicUpdate();
 
-            Id(x => x.EmployeeTaskId).GeneratedBy.Identity(); // Primary key with auto-increment
-            References(x => x.Employee).Column("EmployeeId").LazyLoad();  // Yes, that's all.
-            References(x => x.Task).Column("TaskId").LazyLoad();  // Yes, that's all.
+            Id(x => x.EmployeeTaskId).GeneratedBy.Identity(); 
+            References(x => x.Employee).Column("EmployeeId").LazyLoad();  
+            References(x => x.Task).Column("TaskId").LazyLoad();  
             Map(x => x.TaskStatus);
             Map(x => x.AssignDate); 
             Map(x => x.DueDate);
+            Map(x => x.FinishedDate);
         }
     }
 }

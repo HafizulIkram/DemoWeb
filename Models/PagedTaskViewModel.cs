@@ -1,4 +1,6 @@
-﻿namespace DemoWeb.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace DemoWeb.Models
 {
     public class PagedTaskViewModel
     {
@@ -7,5 +9,7 @@
         public List<Employee> Employees { get; set; } = new List<Employee>();
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+
+    
     }
 }

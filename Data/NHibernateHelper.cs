@@ -5,6 +5,8 @@
     using FluentNHibernate.Cfg.Db;
     using NHibernate.Tool.hbm2ddl;
     using DemoWeb.Mapping;
+    using NHibernate.Hql.Ast.ANTLR;
+    using NHibernate.Linq;
 
     public class NHibernateHelper
     {
@@ -19,11 +21,12 @@
                 {
 
                     var database = Fluently.Configure()
-                        .Database(MsSqlConfiguration.MsSql2008.FormatSql().ConnectionString("Server=Ik_LAP\\SQLEXPRESS;Database=EmployeeDB;Trusted_Connection=True;"))
+                        .Database(MsSqlConfiguration.MsSql2008.ShowSql().ConnectionString("Server=Ik_LAP\\SQLEXPRESS;Database=EmployeeDB;Trusted_Connection=True;"))
                         .Mappings(x =>
                         {
                             x.FluentMappings.AddFromAssemblyOf<EmployeeMap>();
                             x.FluentMappings.AddFromAssemblyOf<TasksMap>();
+                            x.FluentMappings.AddFromAssemblyOf<EmployeeTaskMap>();
                         });
 
 
@@ -38,5 +41,7 @@
         {
             return SessionFactory.OpenSession();
         }
+
+       
     }
 }

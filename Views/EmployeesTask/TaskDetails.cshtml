@@ -35,6 +35,10 @@
                     <p><strong>Task Description:</strong> @Model.tasks.TaskDescription</p>
                     <p><strong>Assign Date:</strong> @Model.AssignDate.ToString("yyyy-MM-dd")</p>
                     <p><strong>Due Date:</strong> @Model.DueDate.ToString("yyyy-MM-dd")</p>
+                    @if (Model.FinishedDate != DateTime.MinValue){
+                    <p><strong>Finished Date:</strong> @Model.FinishedDate.ToString("yyyy-MM-dd")</p>
+                    }
+                 
 
                 </div>
             </div>

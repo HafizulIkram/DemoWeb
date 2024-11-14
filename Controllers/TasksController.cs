@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using NHibernate.Criterion;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using static DemoWeb.Models.Tasks;
@@ -23,36 +24,9 @@ namespace DemoWeb.Controllers
 
         // Index action to list tasks
         [Authorize(Roles = "Team Leader")] // Example: Only HR and TeamLeaders can view tasks
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index()
         {
-            using (var session = _nhibernateHelper.OpenSession())
-            {
-                // QueryOver to fetch tasks, with optional filtering by search string
-                var taskEntity = await session.QueryOver<TaskEntity>().ListAsync();
-
-                var employees = await session.QueryOver<EmployeeEntity>().ListAsync();
-
-                if (!string.IsNullOrEmpty(searchString))
-                {
-                          
-                }
-
-
-                // Tasks models
-                var tasks = taskEntity.Select(entity => new Tasks
-                {
-                    TaskId = entity.TaskId,
-                    TaskDescription = entity.TaskDescription,
-                    TaskPriority = entity.TaskPriority,
-                   
-                    TaskTitle = entity.TaskTitle,
-                  
-                    CreatedAt = entity.CreatedAt,
-
-                });
-
-                return View(tasks);
-            }
+            return View();
         }
 
         // Create action for task creation (Only TeamLeaders allowed to create tasks)
@@ -111,10 +85,10 @@ namespace DemoWeb.Controllers
 
             // Return validation errors if ModelState is invalid
             tasks.PriorityList = new List<SelectListItem>
-    {
-        new SelectListItem { Text = "Urgent", Value = "Urgent" },
-        new SelectListItem { Text = "Normal", Value = "Normal" },
-    };
+            {
+                new SelectListItem { Text = "Urgent", Value = "Urgent" },
+                new SelectListItem { Text = "Normal", Value = "Normal" },
+            };
 
             // Collect ModelState errors to send in the response
             var errors = ModelState.Values.SelectMany(v => v.Errors)
@@ -228,6 +202,16 @@ namespace DemoWeb.Controllers
             using (var session = _nhibernateHelper.OpenSession())
             {
                 var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
+
+                // If a search term is provided, apply a 'like' filter on TaskTitle
+               /* if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    tasksEntity = await session.QueryOver<TaskEntity>()
+                                               .Where(t => t.TaskTitle.IsLike(searchTerm, MatchMode.Anywhere))
+                                               .ListAsync(); // Filter tasks based on TaskTitle
+                }*/
+
+
                 var totalTasks = tasksEntity.Count;
                 var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
 
