@@ -15,6 +15,7 @@ namespace DemoWeb.Mapping
             Id(x => x.EmployeeTaskId).GeneratedBy.Identity(); 
             References(x => x.Employee).Column("EmployeeId").LazyLoad();  
             References(x => x.Task).Column("TaskId").LazyLoad();  
+            References(x => x.AssignedBy).Column("AssignedBy").LazyLoad();  
             Map(x => x.TaskStatus);
             Map(x => x.AssignDate); 
             Map(x => x.DueDate);

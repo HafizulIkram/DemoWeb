@@ -190,6 +190,12 @@ namespace DemoWeb.Controllers
 
             try
             {
+                // Get the currently logged-in user's EmployeeId from claims
+                var employeeIdClaim = User.FindFirst("EmployeeId");
+
+
+                int employeeId = int.Parse(employeeIdClaim.Value);
+
                 using (var session = _nhibernateHelper.OpenSession())
                 {
                     using (var transaction = session.BeginTransaction())
@@ -235,6 +241,10 @@ namespace DemoWeb.Controllers
                                     return Json(new { success = false, message = "Maximum task had been reached" });
                                 }
 
+                                var assignBy = await session.QueryOver<EmployeeEntity>()
+                                  .Where(e => e.EmployeeId == employeeId)
+                                  .SingleOrDefaultAsync();
+
                                 var employeeTaskEntity = new EmployeeTaskEntity
                                 {
                                     Employee = employee,
@@ -242,7 +252,9 @@ namespace DemoWeb.Controllers
                                     AssignDate = DateTime.Today,
                                     DueDate = employeeTaskModel.DueDate,
                                     FinishedDate = null,
-                                    TaskStatus = "Incomplete"
+                                    TaskStatus = "Incomplete",
+                                    AssignedBy = assignBy
+                                    
                                 };
 
 
@@ -311,7 +323,7 @@ namespace DemoWeb.Controllers
         }
 
 
-        // Get Task Details
+       /* // Get Task Details
         [Authorize(Roles = "Team Leader")]
         public async Task<IActionResult> Delete(int? EmployeeTaskId)
         {
@@ -376,10 +388,10 @@ namespace DemoWeb.Controllers
 
                 return View(employeeTasks);
             }
-        }
+        }*/
 
         // Delete the task assigned to a specific employee
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("DeleteTask")]
         [Authorize(Roles = "Team Leader")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int? EmployeeTaskId)
@@ -404,7 +416,7 @@ namespace DemoWeb.Controllers
                             session.Delete(employeeTaskEntity);
                             await transaction.CommitAsync();
 
-                            return Json(new { success = true, message = "Task successfully deleted.", redirectUrl = Url.Action("Index", "EmployeesTask") });
+                            return Json(new { success = true, message = "Task successfully deleted."});
                         }
                     }
 
@@ -441,7 +453,8 @@ namespace DemoWeb.Controllers
                         .SelectList(list => list
                             .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
                             .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
-                            .Select(() => employeeTaskAlias.DueDate).WithAlias(() => employeeTaskAlias.DueDate)          // Select AssignDate
+                            .Select(() => employeeTaskAlias.AssignedBy).WithAlias(() => employeeTaskAlias.AssignedBy)          // Select AssignDate
+                            .Select(() => employeeTaskAlias.DueDate).WithAlias(() => employeeTaskAlias.DueDate)          
                             .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)              // Select Employee
                             .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)                      // Select Task
                         )
@@ -497,6 +510,7 @@ namespace DemoWeb.Controllers
                             .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
                             .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
                             .Select(() => employeeTaskAlias.DueDate).WithAlias(() => employeeTaskAlias.DueDate)          // Select AssignDate
+                            .Select(() => employeeTaskAlias.AssignedBy).WithAlias(() => employeeTaskAlias.AssignedBy)          // Select AssignDate
                             .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)              // Select Employee
                             .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)                      // Select Task
                         )
@@ -510,8 +524,6 @@ namespace DemoWeb.Controllers
 
                     employeeTask.TaskStatus = "Finish";
                     employeeTask.FinishedDate = DateTime.Today;
-
-
 
                     // Save changes to the database
                     using (var transaction = session.BeginTransaction())
@@ -601,6 +613,60 @@ namespace DemoWeb.Controllers
             }
         }
 
+        [Authorize(Roles ="Team Leader")]
+        public async Task<IActionResult> GetAllData()
+        {
+            using (var session = _nhibernateHelper.OpenSession())
+            {
+                EmployeeTaskEntity employeeTaskAlias = null;
+                EmployeeEntity employeeAlias = null;
+                TaskEntity taskAlias = null;
 
+                // Get the currently logged-in user's EmployeeId from claims
+                var employeeIdClaim = User.FindFirst("EmployeeId");
+
+                if (employeeIdClaim == null)
+                {
+                    return Unauthorized();
+                }
+
+                int employeeId = int.Parse(employeeIdClaim.Value);
+
+                // Query to fetch EmployeeTask entities and join with Employee and Task
+                var employeeTaskEntities = await session.QueryOver(() => employeeTaskAlias)
+                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias)
+                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)
+                    .Where(() => employeeTaskAlias.AssignedBy.EmployeeId == employeeId)
+                    .ListAsync<EmployeeTaskEntity>();
+
+
+                // Convert entities to models
+                var employeeTasks = employeeTaskEntities.Select(entity => new EmployeeTask
+                {
+                    EmployeeTaskId = entity.EmployeeTaskId,
+                    EmployeeId = entity.Employee.EmployeeId,
+                    TaskId = entity.Task.TaskId,
+                    TaskStatus = entity.TaskStatus,
+                    AssignDate = entity.AssignDate,
+                    DueDate = entity.DueDate,
+
+
+                    tasks = new EmployeeTask.Tasks
+                    {
+                        TaskTitle = entity.Task.TaskTitle,
+                        TaskPriority = entity.Task.TaskPriority,
+
+                    },
+
+                    employee = new EmployeeTask.Employee
+                    {
+                        EmployeeName = entity.Employee.EmployeeName,
+                    }
+                });
+
+                return View("LeaderView", employeeTasks);
+
+            }
+        }
     }
 }

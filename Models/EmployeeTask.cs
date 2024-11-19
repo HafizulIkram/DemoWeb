@@ -13,6 +13,10 @@ namespace DemoWeb.Models
         [ForeignKey("Employee")]
         public int EmployeeId { get; set; }  // Foreign key to Employee
 
+
+        [ForeignKey("Employee")]
+        public int AssignedBy { get; set; }  // Foreign key to Employee
+
         [ForeignKey("Task")]
         public int TaskId { get; set; }      // Foreign key to Task
 

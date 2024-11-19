@@ -12,8 +12,8 @@
     {
         private static ISessionFactory _sessionFactory;
         //create session object that are used to connect the object with the database
-       
-        public ISessionFactory SessionFactory 
+
+        public ISessionFactory SessionFactory
         {
             get
             {
@@ -42,6 +42,6 @@
             return SessionFactory.OpenSession();
         }
 
-       
+
     }
 }

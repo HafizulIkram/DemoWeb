@@ -1,0 +1,86 @@
+﻿@model IEnumerable<DemoWeb.Models.EmployeeTask>
+
+@{
+    ViewData["Title"] = "Assgined Task List";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+      $(document).ready(function () {
+
+          $('.btnDelete').click(function (e) {
+              // Get anti-forgery token
+              var token = $("input[name='__RequestVerificationToken']").val();
+
+              const data = {
+                  _RequestVerificationToken: token,
+                  EmployeeTaskId: $(this).val(),
+
+              };
+
+              // Use the helper function for the AJAX request
+              const url = '@Url.Action("DeleteTask", "EmployeesTask")';
+              sendAjaxRequest(url, data, token);
+          });
+    });
+</script>
+
+
+<div class="container">
+    @Html.AntiForgeryToken()
+    @if (Model != null && Model.Any())
+    {
+
+        <div class="accordion" id="employeeAccordion">
+            @foreach (var taskGroup in Model.GroupBy(t => t.employee.EmployeeName)) // Group by Employee Name
+            {
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-@taskGroup.Key">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@taskGroup.Key" aria-expanded="false" aria-controls="collapse-@taskGroup.Key">
+                            @taskGroup.Key's Tasks
+                        </button>
+                    </h2>
+                    <div id="collapse-@taskGroup.Key" class="accordion-collapse collapse" aria-labelledby="heading-@taskGroup.Key" data-bs-parent="#employeeAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                @foreach (var task in taskGroup)
+                                {
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card task-card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
+                                                <p>
+                                                    <strong>Employee:</strong> @task.employee.EmployeeName <br />  <!-- Access Employee Name -->
+                                                    <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
+                                                    <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
+                                                    <strong>Assign Date:</strong> @task.AssignDate.ToShortDateString() <br /> <!-- Access Assign Date -->
+                                                    <strong>Due Date:</strong> @task.DueDate.ToShortDateString() <!-- Access Due Date -->
+                                                </p>
+
+                                                <div class="btn-group">
+                                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Details</a>
+
+                                                    @if (task.TaskStatus == "Incomplete")
+                                                    {
+                                                        <button id="btnDelete_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnDelete" value="@task.EmployeeTaskId">Unassign Task</button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+    }
+
+    else
+    {
+        <h1>No Task Available</h1>
+    }
+
+</div>

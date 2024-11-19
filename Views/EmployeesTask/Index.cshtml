@@ -51,10 +51,10 @@
         })
             .done((data) => {
                 $('#taskStatusCardsContainer').html(data); // Load partial view content
-                console.log(data);
+               
             })
-            .fail((data) => {
-                console.error(data);
+            .fail((err) => {
+                console.error(err);
             });
   });
 </script>
@@ -69,51 +69,58 @@
 
         <div id="taskStatusCardsContainer"></div>
         <br />
-        
 
-        @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus) ) // Group by Task Title
+
+        @foreach (var taskGroup in Model.GroupBy(t => t.TaskStatus)) // Group by Task Title
         {
-            <h2>@taskGroup.Key Task</h2>
+            <div class="accordion" id="taskAccordion">
+                <!-- Accordion Item -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading-@taskGroup.Key">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@taskGroup.Key" aria-expanded="false" aria-controls="collapse-@taskGroup.Key">
+                            @taskGroup.Key Tasks
+                        </button>
+                    </h2>
+                    <div id="collapse-@taskGroup.Key" class="accordion-collapse collapse" aria-labelledby="heading-@taskGroup.Key" data-bs-parent="#taskAccordion">
+                        <div class="accordion-body">
+                            <div class="row">
+                                @foreach (var task in taskGroup)
+                                {
+                                    <div class="col-md-4 mb-4">
+                                        <div class="card task-card">
+                                            <div class="card-body">
+                                                <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
+                                                <p>
+                                                    <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
+                                                    <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
+                                                    <strong>Assign Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
+                                                    <strong>Due Date:</strong> @task.DueDate.ToShortDateString()  <!-- Access Assign Date -->
+                                                </p>
 
+                                                <div class="btn-group">
+                                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Details</a>
 
-            <div class="row">
-                @foreach (var task in taskGroup)
-                {
-                    <div class="col-md-4 mb-4">
-                        <div class="card task-card">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.tasks.TaskTitle</h5> <!-- Access Task Title -->
-                                <p>
-                                
-                                    <strong>Status:</strong> @task.TaskStatus <br />  <!-- Access Task Status -->
-                                    <strong>Priority:</strong> @task.tasks.TaskPriority <br />  <!-- Access Task Priority -->
-                                    <strong>Assign Date:</strong> @task.AssignDate.ToShortDateString()  <!-- Access Assign Date -->
-                                    <strong>Due Date:</strong> @task.DueDate.ToShortDateString()  <!-- Access Assign Date -->
-                                </p>
+                                                    @if (task.TaskStatus == "Incomplete")
+                                                    {
+                                                        <button id="btnAccept_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnAccept" value="@task.EmployeeTaskId">Accept Task</button>
+                                                    }
 
-                                <div class="btn-group">
-                                    <a asp-action="TaskDetails" asp-route-employeeTaskId="@task.EmployeeTaskId" class="btn btn-sm btn-outline-warning">Details</a>
-
-
-                                    @if (task.TaskStatus == "Incomplete")
-                                    {
-                                        <button id="btnAccept_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnAccept" value="@task.EmployeeTaskId">Accept Task</button>
-
-                                       
-                                    }
-
-                                    @if (task.TaskStatus == "Pending")
-                                    {
-                                        <button id="btnFinished_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnFinished" value="@task.EmployeeTaskId">Finish</button>
-                                    }
-                                </div>
+                                                    @if (task.TaskStatus == "Pending")
+                                                    {
+                                                        <button id="btnFinished_@task.EmployeeTaskId" class="btn btn-sm btn-outline-info btnFinished" value="@task.EmployeeTaskId">Finish</button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
-                }
+                </div>
             </div>
-
         }
+
     }
 
     else
