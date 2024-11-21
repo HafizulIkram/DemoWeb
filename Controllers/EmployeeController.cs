@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using NHibernate.Exceptions;
 
 using System.Data.SqlClient;
+using NHibernate.Criterion;
 
 namespace DemoWeb.Controllers
 {
@@ -26,13 +27,9 @@ namespace DemoWeb.Controllers
 
         // Specific HR Function
         [Authorize(Roles = "HR")]
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-
-           
-
-                return View();
-            
+                return View(); 
         }
 
         [Authorize(Roles = "HR")] // Ensure only authenticated users can access this action
@@ -47,8 +44,7 @@ namespace DemoWeb.Controllers
                     {
                         EmployeeTaskEntity employeeTaskAlias = null;
                         EmployeeEntity employeeAlias = null;
-                        TaskEntity taskAlias = null;
-
+                       
                         // Fetch the employee details based on the employee ID
                         var employeeEntity = await session.QueryOver<EmployeeEntity>()
                             .Where(x => x.EmployeeId == id)
@@ -186,7 +182,7 @@ namespace DemoWeb.Controllers
         }
 
 
-        [Authorize(Roles = "HR, Employee")]
+        [Authorize(Roles = "HR")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -355,43 +351,59 @@ namespace DemoWeb.Controllers
             }
         }
 
-        [Authorize(Roles = "HR")]
-        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
-        {
-            using (var session = _nhibernateHelper.OpenSession())
-            {
-                var employeeEntity = await session.QueryOver<EmployeeEntity>().OrderBy(e => e.isActive).Desc.ListAsync();
-                var totalTasks = employeeEntity.Count;
-                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
+		[Authorize(Roles = "HR")]
+		public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5, string query = null)
+		{
+			using (var session = _nhibernateHelper.OpenSession())
+			{
+				var queryOver = session.QueryOver<EmployeeEntity>();
 
-                var employeeList = employeeEntity
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(e => new Employee
-                    {
-                        EmployeeId = e.EmployeeId,
-                       EmployeeName = e.EmployeeName,
-                       EmployeeEmail = e.EmployeeEmail,
-                       EmployeeAddress = e.EmployeeAddress,
-                       EmployeePosition = e.EmployeePosition,
-                       DateJoined = e.DateJoined,
-                       isActive = e.isActive,
-                    })
-                    .ToList();
+				if (!string.IsNullOrEmpty(query))
+				{
+					queryOver.Where(e => e.EmployeeEmail.IsInsensitiveLike(query, MatchMode.Anywhere));
+				}
 
-                var model = new PagedTaskViewModel
-                {
-                    Employees = employeeList,
-                    CurrentPage = page,
-                    TotalPages = totalPages
-                };
 
-                return PartialView("_EmployeePartialView", model);
-            }
-        }
+				// Get the total number of matching employees
+				var totalTasks = await queryOver.RowCountAsync(); // Get the total count
+				var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize); // Calculate total pages
 
-        // Helper method to check if exception is a unique constraint violation
-        private bool IsUniqueConstraintViolation(Exception ex)
+				// Apply pagination
+				var employeeEntity = await queryOver
+					.OrderBy(e => e.isActive).Desc // Order by `isActive` descending
+					.Skip((page - 1) * pageSize) // Skip the previous pages
+					.Take(pageSize) // Take the current page size
+					.ListAsync();
+
+				// Map to a list of Employee model for view
+				var employeeList = employeeEntity.Select(e => new Employee
+				{
+					EmployeeId = e.EmployeeId,
+					EmployeeName = e.EmployeeName,
+					EmployeeEmail = e.EmployeeEmail,
+					EmployeeAddress = e.EmployeeAddress,
+					EmployeePosition = e.EmployeePosition,
+					DateJoined = e.DateJoined,
+					isActive = e.isActive,
+				}).ToList();
+
+				// Prepare the view model with paginated results
+				var model = new PagedTaskViewModel
+				{
+					Employees = employeeList,
+					CurrentPage = page,
+					TotalPages = totalPages
+				};
+
+				// Return the partial view with employee data
+				return PartialView("_EmployeePartialView", model);
+			}
+		}
+
+
+
+		// Helper method to check if exception is a unique constraint violation
+		private bool IsUniqueConstraintViolation(Exception ex)
         {
 			// Check if exception is a GenericADOException, which NHibernate typically uses
 			if (ex is GenericADOException adoEx && adoEx.InnerException is SqlException sqlEx)

@@ -63,7 +63,6 @@ namespace DemoWeb.Models
             public string TaskStatus { get; set; }
             public string TaskPriority { get; set; }
             public string TaskDescription { get; set; }
-           
 
         }
 

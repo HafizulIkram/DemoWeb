@@ -6,49 +6,37 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-    // Function to load a specific page of tasks with an optional search term
-    function loadTaskPage(page) {
+ 
+    // Function to load a specific page of tasks
+    function loadTaskPage(page, query) {
         $.ajax({
             url: '@Url.Action("GetTaskList", "Tasks")',
-            method: 'GET',
-            data: { page: page}, // Include search term if provided
-            dataType: 'html', // Assuming the server returns HTML
-            
+            type: 'GET',
+            data: { page: page, query: query }
         })
             .done(function (data) {
-                // This function runs if the request is successful
-                $('#taskListContainer').html(data); // Update the task list container with results
+                $('#taskListContainer').html(data);
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.error("Error loading task page:", textStatus, errorThrown);
+                alert("An error occurred while loading the task page.");
             });
-
-    
     }
 
-    // Filter tasks by TaskTitle or show all if the search term is empty
-    function filterTasks(searchTerm) {
-        loadTaskPage(1, searchTerm); // Load the first page with the filtered search term
-    }
-
-    // On page load, display all tasks by default
+    // Load the first page on initial load
     $(document).ready(function () {
-        loadTaskPage(1); // Load all tasks initially
+        loadTaskPage(1, ''); // Loads the first page initially with no search query
 
-        // Filter tasks based on input
-        $('#taskSearch').on('keyup', function () {
-            var searchText = $(this).val().toLowerCase();
+        // Set up input event handler for search
+        $('#taskSearch').on('input', function () {
+            var query = $(this).val();
 
-            $('#taskListContainer .task-item').each(function () {
-                var taskTitle = $(this).find('.task-title').text().toLowerCase();
-                console.log(taskTitle);
-
-                if (taskTitle.includes(searchText)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
+            // Load the first page with the search query
+            loadTaskPage(1, query);
         });
     });
 </script>
+
 
 
 

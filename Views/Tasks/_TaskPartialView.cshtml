@@ -1,62 +1,68 @@
 ﻿@model DemoWeb.Models.PagedTaskViewModel
 
 <div id="taskList" class="container">
-    @Html.AntiForgeryToken()
 
+    <!-- Table Headers -->
     <div class="row mb-3 justify-content-center d-none d-md-flex">
-        <!-- Table Headers -->
-        <div class="col-2"><h5>Title</h5></div>
-        <div class="col-2"><h5>Description</h5></div>
-        <div class="col-1"><h5>Priority</h5></div>
-        <div class="col-2"><h5>Created At</h5></div>
-        <div class="col-2"><h5>Action</h5></div>
+        <div class="col-2">
+            <h5>Title</h5>
+        </div>
+        <div class="col-4">
+            <h5>Description</h5>
+        </div>
+        <div class="col-2">
+            <h5>Priority</h5>
+        </div>
+        <div class="col-2">
+            <h5>Created At</h5>
+        </div>
+        <div class="col-2 text-center">
+            <h5>Action</h5>
+        </div>
     </div>
 
     <!-- Task List -->
-    <div id="taskListContainer">
-        @foreach (var task in Model.Tasks)
-        {
-            <div class="row align-items-center py-3 my-2 border rounded justify-content-center task-item">
-                <div class="col-10 col-md-2 task-title">
-                    <span class="d-md-none font-weight-bold">Title: </span>@task.TaskTitle
-                </div>
-                <div class="col-10 col-md-2">
-                    <span class="d-md-none font-weight-bold">Description: </span>@task.TaskDescription
-                </div>
-                <div class="col-10 col-md-2">
-                    <span class="d-md-none font-weight-bold">Priority: </span>
-                    @if (task.TaskPriority == "Urgent")
-                    {
-                        <span class="badge bg-danger">Urgent</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-primary">Normal</span>
-                    }
-                </div>
-                <div class="col-10 col-md-2">
-                    <span class="d-md-none font-weight-bold">Created At: </span>@task.CreatedAt.ToString("yyyy-MM-dd")
-                </div>
-                <div class="col-10 col-md-1 text-center">
-                    <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })" class="text-primary me-2">
-                        <i class="fa-solid fa-pencil"></i>
-                    </a>
-                </div>
+    @foreach (var task in Model.Tasks)
+    {
+        <div class="row align-items-center py-3 my-2 border rounded justify-content-center">
+            <!-- Task Data for Desktop & Tablet -->
+            <div class="col-10 col-md-3">
+                <span class="d-md-none font-weight-bold">Title: </span>@task.TaskTitle
             </div>
-        }
-    </div>
+            <div class="col-10 col-md-3">
+                <span class="d-md-none font-weight-bold">Description: </span>@task.TaskDescription
+            </div>
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Priority: </span>
+                @if (task.TaskPriority == "Urgent")
+                {
+                    <span class="badge bg-danger">Urgent</span>
+                }
+                else
+                {
+                    <span class="badge bg-primary">Normal</span>
+                }
+            </div>
+            <div class="col-10 col-md-2">
+                <span class="d-md-none font-weight-bold">Created At: </span>@task.CreatedAt.ToString("yyyy-MM-dd")
+            </div>
+            <div class="col-10 col-md-2 text-center">
+                <a href="@Url.Action("Edit", "Tasks", new { id = task.TaskId })" class="text-primary me-2">
+                    <i class="fa-solid fa-pencil"></i>
+                </a>
+            </div>
+        </div>
+    }
 
-    <!-- Pagination controls -->
+    <!-- Pagination Controls -->
     <nav class="mt-4">
         <ul class="pagination justify-content-center">
             @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                    <a class="page-link" href="#" onclick="loadTaskPage(@i); return false;">@i</a>
+                    <a class="page-link" href="#" onclick="loadTaskPage(@i, ''); return false;">@i</a>
                 </li>
             }
         </ul>
     </nav>
 </div>
-
-

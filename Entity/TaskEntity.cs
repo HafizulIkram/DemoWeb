@@ -12,16 +12,8 @@ namespace DemoWeb.Entity
 
         public virtual string TaskDescription { get; set; }
 
-        
-       
-
-       
         public virtual string TaskPriority { get; set; }
 
-        
-       
-
-      
         public virtual DateTime CreatedAt { get; set; }
 
         public virtual IList<EmployeeTaskEntity> EmployeeTasks { get; set; } = new List<EmployeeTaskEntity>();

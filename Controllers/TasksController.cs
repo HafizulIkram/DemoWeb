@@ -24,7 +24,7 @@ namespace DemoWeb.Controllers
 
         // Index action to list tasks
         [Authorize(Roles = "Team Leader")] // Example: Only HR and TeamLeaders can view tasks
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }
@@ -63,7 +63,7 @@ namespace DemoWeb.Controllers
                             TaskTitle = tasks.TaskTitle,
                             TaskDescription = tasks.TaskDescription,
                             TaskPriority = tasks.TaskPriority,
-                            CreatedAt = tasks.CreatedAt, // If needed
+                            CreatedAt = DateTime.Today, // If needed
                            
                         };
 
@@ -76,9 +76,6 @@ namespace DemoWeb.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log the exception if necessary (implement logging according to your framework)
-                    // Example: _logger.LogError(ex, "Error occurred while creating task.");
-
                     return Json(new { success = false, message = "An error occurred while creating the task.", error = ex.Message });
                 }
             }
@@ -175,11 +172,10 @@ namespace DemoWeb.Controllers
             catch (Exception ex)
             {
                 tasks.PriorityList = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "Urgent", Value = "Urgent" },
-                new SelectListItem { Text = "Normal", Value = "Normal" },
-
-            };
+                {
+                    new SelectListItem { Text = "Urgent", Value = "Urgent" },
+                    new SelectListItem { Text = "Normal", Value = "Normal" },
+                };
 
                 return Json(new { success = false, message = "An error occurred", error = ex.Message });
             }
@@ -188,58 +184,58 @@ namespace DemoWeb.Controllers
             {
                 new SelectListItem { Text = "Urgent", Value = "Urgent" },
                 new SelectListItem { Text = "Normal", Value = "Normal" },
-
             };
-
 
             return Json(new { success = false, message = "Validation failed", errors = ModelState });
 
         }
 
+     
         [Authorize(Roles = "Team Leader")]
-        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5)
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5, string query = null)
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
-                var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
 
-                // If a search term is provided, apply a 'like' filter on TaskTitle
-               /* if (!string.IsNullOrEmpty(searchTerm))
+                var queryOver = session.QueryOver<TaskEntity>();
+
+                if (!string.IsNullOrEmpty(query))
                 {
-                    tasksEntity = await session.QueryOver<TaskEntity>()
-                                               .Where(t => t.TaskTitle.IsLike(searchTerm, MatchMode.Anywhere))
-                                               .ListAsync(); // Filter tasks based on TaskTitle
-                }*/
+                    queryOver.Where(e => e.TaskTitle.IsInsensitiveLike(query, MatchMode.Anywhere));
+                }
+
+                // Get the total number of matching employees
+                var totalTasks = await queryOver.RowCountAsync(); // Get the total count
+                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize); // Calculate total pages
+
+                // Apply pagination
+                var taskEntity = await queryOver
+                    .OrderBy(e => e.TaskTitle).Desc // Order by `isActive` descending
+                    .Skip((page - 1) * pageSize) // Skip the previous pages
+                    .Take(pageSize) // Take the current page size
+                    .ListAsync();
 
 
-                var totalTasks = tasksEntity.Count;
-                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
-
-                var tasksList = tasksEntity
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(t => new Tasks
-                    {
-                        TaskId = t.TaskId,
-                        TaskTitle = t.TaskTitle,
-                        TaskDescription = t.TaskDescription,
-                        TaskPriority = t.TaskPriority,
-                        CreatedAt = t.CreatedAt,
-                      
-                    })
-                    .ToList();
+                var taskList = taskEntity.Select(e => new Tasks
+                {
+                    TaskTitle = e.TaskTitle,
+                    TaskId = e.TaskId,
+                    TaskPriority = e.TaskPriority,
+                    TaskDescription = e.TaskDescription,
+                    CreatedAt = e.CreatedAt
+                }).ToList();
 
                 var model = new PagedTaskViewModel
                 {
-                    Tasks = tasksList,
+                    Tasks = taskList,
                     CurrentPage = page,
-                    TotalPages = totalPages
+                    TotalPages = totalPages,
+
                 };
 
                 return PartialView("_TaskPartialView", model);
             }
         }
-
     }
 
 } 

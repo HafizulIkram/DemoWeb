@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NHibernate.Transform;
 using Microsoft.AspNetCore.Authorization;
-using static DemoWeb.Models.EmployeeTask;
+using NHibernate.Criterion;
 
 
 namespace DemoWeb.Controllers
@@ -285,34 +285,40 @@ namespace DemoWeb.Controllers
         // Partial View. List of Task
         [HttpGet]
         [Authorize(Roles = "Team Leader")]
-        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 3)
+        public async Task<IActionResult> GetTaskList(int page = 1, int pageSize = 5, string query = null)
         {
             using (var session = _nhibernateHelper.OpenSession())
             {
-                int employeeId = int.TryParse(User.FindFirst("EmployeeId")?.Value, out var parsedEmployeeId) ? parsedEmployeeId : 0;
-                // Define aliases for your entities
-                EmployeeTaskEntity employeeTaskAlias = null;
-                EmployeeEntity employeeAlias = null;
-                TaskEntity taskAlias = null;
 
-                var tasksEntity = await session.QueryOver<TaskEntity>().ListAsync();
-                var totalTasks = tasksEntity.Count;
-                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize);
+                var queryOver = session.QueryOver<TaskEntity>();
 
-                var tasksList = tasksEntity
-                    .Skip((page - 1) * pageSize)
-                    .Take(pageSize)
-                    .Select(t => new EmployeeTask.Tasks
-                    {
-                        TaskId = t.TaskId,
-                        TaskTitle = t.TaskTitle,
-                        TaskDescription = t.TaskDescription
-                    })
-                    .ToList();
-                
+                if (!string.IsNullOrEmpty(query))
+                {
+                    queryOver.Where(e => e.TaskTitle.IsInsensitiveLike(query, MatchMode.Anywhere));
+                }
+
+                // Get the total number of matching employees
+                var totalTasks = await queryOver.RowCountAsync(); // Get the total count
+                var totalPages = (int)Math.Ceiling(totalTasks / (double)pageSize); // Calculate total pages
+
+                // Apply pagination
+                var taskEntity = await queryOver
+                    .OrderBy(e => e.TaskTitle).Desc // Order by `isActive` descending
+                    .Skip((page - 1) * pageSize) // Skip the previous pages
+                    .Take(pageSize) // Take the current page size
+                    .ListAsync();
+
+               
+                var taskList = taskEntity.Select(e => new Models.Tasks
+                {
+                   TaskTitle = e.TaskTitle,
+                   TaskId = e.TaskId,
+                   TaskDescription = e.TaskDescription,
+                }).ToList();
+
                 var model = new PagedTaskViewModel
                 {
-                    EmployeeTasks = tasksList,
+                    Tasks = taskList,
                     CurrentPage = page,
                     TotalPages = totalPages,
 
@@ -322,73 +328,7 @@ namespace DemoWeb.Controllers
             }
         }
 
-
-       /* // Get Task Details
-        [Authorize(Roles = "Team Leader")]
-        public async Task<IActionResult> Delete(int? EmployeeTaskId)
-        {
-            if (EmployeeTaskId == null)
-            {
-                return NotFound();
-            }
-
-            using (var session = _nhibernateHelper.OpenSession())
-            {
-
-                // Define aliases for your entities
-                EmployeeTaskEntity employeeTaskAlias = null;
-                EmployeeEntity employeeAlias = null;
-                TaskEntity taskAlias = null;
-
-                // Asynchronous QueryOver to perform join between EmployeeTask, Employee, and Task
-                var employeeTaskEntities = await session.QueryOver(() => employeeTaskAlias)
-                    .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee
-                    .JoinAlias(() => employeeTaskAlias.Task, () => taskAlias)         // Join with Task
-                    .Where(() => employeeTaskAlias.EmployeeTaskId == EmployeeTaskId)      // Filter by EmployeeTaskId
-                     .SelectList(list => list
-                        .Select(() => employeeTaskAlias.EmployeeTaskId).WithAlias(() => employeeTaskAlias.EmployeeTaskId)  // Select EmployeeTaskId
-                        .Select(() => employeeTaskAlias.AssignDate).WithAlias(() => employeeTaskAlias.AssignDate)          // Select AssignDate
-                        .Select(() => employeeTaskAlias.DueDate).WithAlias(() => employeeTaskAlias.DueDate)          // Select AssignDate
-                        .Select(() => employeeTaskAlias.Employee).WithAlias(() => employeeTaskAlias.Employee)          // Select AssignDate
-                        .Select(() => employeeTaskAlias.Task).WithAlias(() => employeeTaskAlias.Task)          // Select AssignDate
-
-                    )
-                    .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
-                    .SingleOrDefaultAsync();
-
-                if (employeeTaskEntities == null)
-                {
-                    return NotFound(); // Return 404 if the task is not found
-                }
-
-                // Convert entities to models
-                EmployeeTask employeeTasks = new EmployeeTask
-                {
-                    EmployeeTaskId = employeeTaskEntities.EmployeeTaskId,
-                    EmployeeId = employeeTaskEntities.Employee.EmployeeId,
-                    TaskId = employeeTaskEntities.Task.TaskId,
-                    TaskStatus = employeeTaskEntities.TaskStatus,
-                    AssignDate = employeeTaskEntities.AssignDate,
-                    DueDate = employeeTaskEntities.DueDate,
-
-                    tasks = new EmployeeTask.Tasks
-                    {
-
-                        TaskTitle = employeeTaskEntities.Task.TaskTitle,
-                        TaskPriority = employeeTaskEntities.Task.TaskPriority,
-
-                    },
-
-                    employee = new EmployeeTask.Employee
-                    {
-                        EmployeeName = employeeTaskEntities.Employee.EmployeeName,
-                    }
-                };
-
-
-                return View(employeeTasks);
-            }
-        }*/
+  
 
         // Delete the task assigned to a specific employee
         [HttpPost, ActionName("DeleteTask")]
@@ -517,6 +457,8 @@ namespace DemoWeb.Controllers
                         .TransformUsing(Transformers.AliasToBean<EmployeeTaskEntity>())  // Map results to EmployeeTaskEntity model
                         .SingleOrDefaultAsync();
 
+                    var date = employeeTask.AssignDate.ToString();
+
                     if (employeeTask == null)
                     {
                         return Json(new { success = false, message = "Task not found." }); // Return JSON if the task is not found
@@ -640,6 +582,7 @@ namespace DemoWeb.Controllers
                     .ListAsync<EmployeeTaskEntity>();
 
 
+                
                 // Convert entities to models
                 var employeeTasks = employeeTaskEntities.Select(entity => new EmployeeTask
                 {
@@ -648,7 +591,9 @@ namespace DemoWeb.Controllers
                     TaskId = entity.Task.TaskId,
                     TaskStatus = entity.TaskStatus,
                     AssignDate = entity.AssignDate,
+                    AssignedBy = entity.AssignedBy.EmployeeId,
                     DueDate = entity.DueDate,
+
 
 
                     tasks = new EmployeeTask.Tasks
@@ -664,6 +609,7 @@ namespace DemoWeb.Controllers
                     }
                 });
 
+               
                 return View("LeaderView", employeeTasks);
 
             }

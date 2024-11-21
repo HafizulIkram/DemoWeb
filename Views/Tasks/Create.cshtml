@@ -8,12 +8,12 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
-
         // On clicking the login button
         $('#btnCreate').click(function (e) {
-
             e.preventDefault(); // Prevent default form submission
 
+            // Get anti-forgery token
+            var token = $("input[name='__RequestVerificationToken']").val();
 
             const data = {
                 _RequestVerificationToken: token,
@@ -21,42 +21,16 @@
                 TaskDescription: $('#TaskDescription').val(),
                 TaskStatus: $('#TaskStatus').val(),
                 TaskPriority: $('#TaskPriority').val(),
-               
                 CreatedAt: $('#CreatedAt').val(),
             };
 
-            
-            // Get anti-forgery token
-            var token = $("input[name='__RequestVerificationToken']").val();
-
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Create", "Tasks")',
-                 data: data,
-                headers: {
-                    'RequestVerificationToken': token // Add the token in headers
-                }
-            })
-                .done((data) => {
-
-                    $('.modal-body').text(data.message);
-
-                    $('#exampleModal').modal('show');
-                 
-                })
-                .fail((err) => {
-                    $('.modal-body').text(data.errors.errorMessage);
-
-                    $('#exampleModal').modal('show');
-                    console.error(err);
-                })
-                .always(() => {
-                    console.log('always called');
-                });
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("Create", "Tasks")';
+            sendAjaxRequest(url, data, token);
         });
     });
 </script>
+
 
 
     <div class="container">

@@ -6,33 +6,37 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
-    // Function to load a specific page of tasks
-       function loadTaskPage(page) {
-           $.get('@Url.Action("GetTaskList", "Employee")', { page: page }, function (data) {
-                  $('#employeeListContainer').html(data);
-                 });
-          }
+	// Function to load a specific page of tasks
+	function loadTaskPage(page, query) {
+		$.ajax({
+			url: '@Url.Action("GetTaskList", "Employee")',
+			type: 'GET',
+			data: { page: page, query: query }
+		})
+			.done(function (data) {
+				$('#employeeListContainer').html(data);
+			})
+			.fail(function (jqXHR, textStatus, errorThrown) {
+				console.error("Error loading task page:", textStatus, errorThrown);
+				alert("An error occurred while loading the task page.");
+			});
+	}
 
-     // Load the first page on initial load
-       $(document).ready(function () {
-           loadTaskPage(1); // Loads the first page initially
 
-			$('#employeeSearch').on('input', function () {
-			var searchText = $(this).val().toLowerCase();
+	// Load the first page on initial load
+	$(document).ready(function () {
+		loadTaskPage(1, ''); // Loads the first page initially with no search query
 
-			$('#employeeListContainer .employee-item').each(function () {
-				var taskTitle = $(this).find('.employee-name').text().toLowerCase();
+		// Set up input event handler for search
+		$('#employeeSearch').on('input', function () {
+			var query = $(this).val();
 			
 
-				if (taskTitle.includes(searchText)) {
-					$(this).show();
-				} else {
-					$(this).hide();
-				}
-			});
+			// Load the first page with the search query
+			loadTaskPage(1, query);
 		});
-		
-       });
+	});
+
 
 	// Handle the deactivate button click and show modal
 	$(document).on('click', '#btnDeactivate', function (e) {
@@ -58,8 +62,6 @@
 				EmployeeId: employeeId,
 			};
 
-			console.log(data);
-
 			// Send AJAX request
 			$.ajax({
 				type: 'POST',
@@ -79,8 +81,11 @@
 
 					$('#btnConfirm').hide();
 
+					// Attach an event listener to the modal for when it's hidden
+					$('#exampleModal').on('hidden.bs.modal', function () {
+						location.reload(); // Reload the page when the modal is hidden
+					});
 
-					
 				})
 				.fail((err) => {
 					// Display error message in the modal
@@ -142,6 +147,11 @@
 					console.log({ data });
 
 					$('#btnConfirm').hide();
+
+					// Attach an event listener to the modal for when it's hidden
+					$('#exampleModal').on('hidden.bs.modal', function () {
+						location.reload(); // Reload the page when the modal is hidden
+					});
 
 
 				})

@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
-using static DemoWeb.Models.EmployeeTask;
 using Employee = DemoWeb.Models.Employee;
 
 
@@ -206,8 +205,6 @@ namespace FirstWebApp.Controllers
         {
             try
             {
-
-
                 // Get the employee ID from the claims
                 var employeeIdClaim = User.FindFirst("EmployeeId")?.Value;
 
@@ -286,11 +283,11 @@ namespace FirstWebApp.Controllers
         public async Task<IActionResult> EditPassword(Employee employee)
         {
             // Ensure that both passwords are provided and match
-            if (!string.IsNullOrWhiteSpace(employee.Password) && employee.Password == employee.ConfirmPassword)
+            if (string.IsNullOrWhiteSpace(employee.Password) )
             {
                 return Json(new { success = false, message = "Passwords are empty." });
             }
-            else if (employee.Password == employee.ConfirmPassword)
+            else if (employee.Password != employee.ConfirmPassword)
             {
                 return Json(new { success = false, message = "Passwords do not match." });
             }
@@ -316,7 +313,7 @@ namespace FirstWebApp.Controllers
                                 await session.UpdateAsync(employeeEntity);
                                 await transaction.CommitAsync();
 
-                                return Json(new { success = true, redirectUrl = Url.Action("Profile", "Home") });
+                                return Json(new { success = true, message = "Sucessfully updating password." });
                             }
                         }
                     }
@@ -332,10 +329,5 @@ namespace FirstWebApp.Controllers
             return Json(new { success = false, message = "An error occurred." });
         }
 
-
-
-
     }
-
-
 }

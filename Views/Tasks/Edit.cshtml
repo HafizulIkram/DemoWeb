@@ -32,36 +32,9 @@
 
             };
 
-            console.log(data);
-
-            // Send AJAX request
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("Edit", "Tasks")', // Use getUrl function for dynamic URL building
-                data: data, // Pass form data
-                headers: {
-                    'RequestVerificationToken': token, // Add the anti-forgery token in the headers
-                    TaskId: id
-                }
-            })
-                .done((data) => {
-
-                    $('.modal-body').text(data.message);
-
-                    $('#exampleModal').modal('show');
-                    console.log('Success:', data);
-                    // Add any success handling logic here
-                })
-                .fail((err) => {
-                    $('.modal-body').text("Error " + err.status);
-
-                    $('#exampleModal').modal('show');
-                    console.error('Error:', err);
-                    // Add any error handling logic here
-                })
-                .always(() => {
-                    console.log('Request completed.');
-                });
+            // Use the helper function for the AJAX request
+            const url = '@Url.Action("Edit", "Tasks")';
+            sendAjaxRequest(url, data, token);
         });
     });
 </script>

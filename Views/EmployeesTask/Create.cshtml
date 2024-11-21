@@ -8,44 +8,35 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script>
 
-     function loadTaskPage(page) {
-        var searchQuery = $("#taskSearch").val();
-        
+    // Function to load a specific page of tasks
+    function loadTaskPage(page, query) {
         $.ajax({
             url: '@Url.Action("GetTaskList", "EmployeesTask")',
-            data: { page: page, search: searchQuery }
+            type: 'GET',
+            data: { page: page, query: query }
         })
             .done(function (data) {
-                $("#taskListContainer").html(data); // Update the task list section
+                $('#taskListContainer').html(data);
             })
-            .fail(function (xhr) {
-                console.error("Failed to load tasks", xhr);
-            })
-            .always(function () {
-                console.log("Task list load attempt complete");
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                console.error("Error loading task page:", textStatus, errorThrown);
+                alert("An error occurred while loading the task page.");
             });
-
     }
 
+    // Load the first page on initial load
     $(document).ready(function () {
-     
-        // Search filter functionality
-        $("#taskSearch").on("input", function () {
-            var searchQuery = $(this).val().toLowerCase();
+        loadTaskPage(1, ''); // Loads the first page initially with no search query
 
-            // Loop through each task item and toggle visibility based on search query
-            $("#taskList .task-item").each(function () {
-                var taskTitle = $(this).find(".form-check-label").text().toLowerCase();
+        // Set up input event handler for search
+        $('#taskSearch').on('input', function () {
+            var query = $(this).val();
 
-                if (taskTitle.includes(searchQuery)) {
-                    $(this).show();  // Show the task item if it matches
-                } else {
-                    $(this).hide();  // Hide the task item and accordion if it doesn't match
-                }
-            });
+            // Load the first page with the search query
+            loadTaskPage(1, query);
         });
 
-        loadTaskPage(1); // Reload tasks on new search input
+
 
         // On clicking the Create button
         $('#btnCreate').click(function (e) {

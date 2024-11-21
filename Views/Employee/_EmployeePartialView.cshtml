@@ -30,7 +30,7 @@
     <!-- Employee List -->
     @foreach (var employee in Model.Employees)
     {
-        <div class="row align-items-center py-3 my-2 border rounded justify-content-center employee-item">
+        <div class="row align-items-center py-3 my-2 border rounded justify-content-center">
             <!-- Employee Data for Desktop & Tablet -->
             <div class="col-10 col-md-2 employee-name">
                 <span class="d-md-none font-weight-bold">Name: </span>@employee.EmployeeName
@@ -59,7 +59,7 @@
                 }
             </div>
             <div class="col-10 col-md-1 text-center">
-                @if (employee.isActive)
+                @if (employee.isActive && User.FindFirst("EmployeeId")?.Value != employee.EmployeeId.ToString())
                 {
                     <a asp-action="Edit" asp-route-id="@employee.EmployeeId" class="text-primary me-2">
                         <i class="fa-solid fa-pencil"></i>
@@ -72,14 +72,14 @@
 
                 @if (employee.isActive && User.FindFirst("EmployeeId")?.Value != employee.EmployeeId.ToString())
                 {
-                    <button type="button" id="btnDeactivate" class="text-primary me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
+                    <button type="button" id="btnDeactivate" class="text-danger me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
                         <i class="fa-solid fa-ban"></i>
                     </button>
 
                 }
-                else
+                else if (User.FindFirst("EmployeeId")?.Value != employee.EmployeeId.ToString())
                 {
-                    <button type="button" id="btnActivate" class="text-primary me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
+                    <button type="button" id="btnActivate" class="text-warning me-2" data-employee-id="@employee.EmployeeId" style="border: none; background: transparent;">
                         <i class="fa-solid fa-circle-check"></i>
                     </button>
                 }
