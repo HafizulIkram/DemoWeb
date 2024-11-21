@@ -57,6 +57,8 @@ namespace FirstWebApp.Controllers
                     // Validate user input
                     if (ModelState.IsValid)
                     {
+
+                        
                         // Find employee based on email and password
                         var employeeEntity = await session.QueryOver<EmployeeEntity>()
                             .Where(x => x.EmployeeEmail == loginModel.EmployeeEmail)
@@ -220,6 +222,8 @@ namespace FirstWebApp.Controllers
                         var employeeEntity = await session.QueryOver<EmployeeEntity>()
                             .Where(x => x.EmployeeId == employeeId)
                             .SingleOrDefaultAsync();
+
+                        
                         // Count the number of finished tasks for a specific employee
                         var finishTask = await session.QueryOver(() => employeeTaskAlias)
                                        .JoinAlias(() => employeeTaskAlias.Employee, () => employeeAlias) // Join with Employee

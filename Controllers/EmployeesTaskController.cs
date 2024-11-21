@@ -175,12 +175,7 @@ namespace DemoWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeTask employeeTaskModel)
         {
-            ModelState.Remove("TaskId");
-            ModelState.Remove("TaskList");
-            ModelState.Remove("EmployeesList");
-            ModelState.Remove("employee");
-            ModelState.Remove("tasks");
-            ModelState.Remove("TaskStatus");
+           
 
             // Validate the model state
             if (!ModelState.IsValid)

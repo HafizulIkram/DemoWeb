@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
@@ -25,8 +27,7 @@ namespace DemoWeb.Models
         [Display(Name = "Assign Date")]
         public DateTime AssignDate { get; set; }
 
-        
-        [Required]
+        [ValidateNever]
         [Display(Name = "Status")]
         public string TaskStatus { get; set; }
 
@@ -44,15 +45,22 @@ namespace DemoWeb.Models
 
 
         // Properties for the dropdown lists
+        [ValidateNever]
         public List<SelectListItem> EmployeesList { get; set; }  // List for Employees dropdown
+
+        [ValidateNever]
         public List<Tasks> TaskList { get; set; }
+
+ 
         public List<int> TaskListId { get; set; }
 
 
         public bool IsSelected { get; set; }
 
+        [ValidateNever]
         public Tasks tasks { get; set; }
 
+        [ValidateNever]
         public Employee employee { get; set; }
 
         // class
