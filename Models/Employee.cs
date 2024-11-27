@@ -29,7 +29,7 @@ namespace DemoWeb.Models
 
         [Required]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters long.")]
-        [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Password must contain at least one capital letter and one special character.")]
+        [RegularExpression(@"^(?=.*[A-Z])(?=.*[\W]).+$", ErrorMessage = "Pas must contain at least one capital letter and one special character.")]
         public  string Password { get; set; }
 
         [Required]
